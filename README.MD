@@ -2,7 +2,7 @@
 [![codecov](https://codecov.io/gh/Tada5hi/bulletin-board-code/branch/master/graph/badge.svg?token=4KNSG8L13V)](https://codecov.io/gh/Tada5hi/bulletin-board-code)
 [![Master Workflow](https://github.com/Tada5hi/bulletin-board-code/workflows/main/badge.svg)](https://github.com/Tada5hi/bulletin-board-code)
 
-# Bulletin Board Code  🚀
+# Bulletin Board Code 🧙
 **B**ulletin **B**oard **Code** (BBCode) is a library to parse a string containing BBCodes to HTML.
 Furthermore, it is also possible to clean the input string.
 
