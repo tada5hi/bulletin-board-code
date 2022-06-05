@@ -1,6 +1,6 @@
 [![npm version](https://badge.fury.io/js/bulletin-board-code.svg)](https://badge.fury.io/js/bulletin-board-code)
 [![codecov](https://codecov.io/gh/Tada5hi/bulletin-board-code/branch/master/graph/badge.svg?token=4KNSG8L13V)](https://codecov.io/gh/Tada5hi/bulletin-board-code)
-[![Master Workflow](https://github.com/Tada5hi/bulletin-board-code/workflows/main/badge.svg)](https://github.com/Tada5hi/bulletin-board-code)
+[![CI](https://github.com/tada5hi/bulletin-board-code/actions/workflows/main.yml/badge.svg)](https://github.com/tada5hi/bulletin-board-code/actions/workflows/main.yml)
 
 # Bulletin Board Code 🧙
 **B**ulletin **B**oard **Code** (BBCode) is a library to parse a string containing BBCodes to HTML.
