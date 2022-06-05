@@ -22,7 +22,7 @@ npm install bulletin-board-code --save
 BBCode to HTML:
 
 ```typescript
-import { Parser } from 'bulletin-board-parser';
+import { Parser } from 'bulletin-board-code';
 
 // initialize the parser
 const parser = new Parser();
@@ -35,7 +35,7 @@ console.log(parser.toHTML('[b]foo[/b])'));
 Custom BBCode TO HTML:
 
 ```typescript
-import { Parser, setHandler } from 'bulletin-board-parser';
+import { Parser, setHandler } from 'bulletin-board-code';
 
 setHandler('lazy', {
     html: '<span>lazy: {0}</span>'
