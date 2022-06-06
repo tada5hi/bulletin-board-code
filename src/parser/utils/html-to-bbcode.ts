@@ -8,7 +8,7 @@
 import { Token, TokenType } from '../../token';
 import { escapeEntities, findHandlerForHTMLToken } from '../../handler/utils';
 import { Handler } from '../../handler';
-import { formatString } from './bbcode-to-html';
+import { formatString } from '../../utils';
 
 export function convertHTMLToBBCode(tokens: Token[], isRoot?: boolean) {
     let output = '';

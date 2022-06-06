@@ -8,3 +8,4 @@
 export * from './array';
 export * from './has-own-property';
 export * from './object';
+export * from './string';

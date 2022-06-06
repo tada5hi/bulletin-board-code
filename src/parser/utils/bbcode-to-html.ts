@@ -8,27 +8,7 @@
 import { Token, TokenType } from '../../token';
 import { Handler, getHandler } from '../../handler';
 import { escapeEntities } from '../../handler/utils';
-
-export function formatString(str: string, obj: Record<string, any>) {
-    return str.replace(/\{([^}]+)\}/g, (match, group) => {
-        let escape = true;
-
-        if (group.charAt(0) === '!') {
-            escape = false;
-            group = group.substring(1);
-        }
-
-        if (group === '0') {
-            escape = false;
-        }
-
-        if (typeof obj[group] === undefined) {
-            return match;
-        }
-
-        return escape ? escapeEntities(obj[group], true) : obj[group];
-    });
-}
+import { formatString } from '../../utils';
 
 export function convertBBCodeToHTML(tokens: Token[], isRoot: boolean) {
     let bbcode;
@@ -55,7 +35,7 @@ export function convertBBCodeToHTML(tokens: Token[], isRoot: boolean) {
                 const lastChild = token.children[token.children.length - 1] || {} as Token;
 
                 bbcode = getHandler(token.name);
-                content = convertBBCodeToHTML(token.children, false);
+                content = convertBBCodeToHTML([...token.children], false);
 
                 if (bbcode && bbcode.html) {
                     // Only add a line break to the end if this is
