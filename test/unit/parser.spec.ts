@@ -63,5 +63,32 @@ describe('src/parser/*.ts', () => {
         expect(parser.cleanup('[b ]foo[/b]')).toEqual('[b]foo[/b]');
     });
 
+    it('should convert html to bbcode string', () => {
+        const parser = new Parser();
 
+        expect(parser.toBBCode('<strong>foo</strong>')).toEqual('[b]foo[/b]');
+        expect(parser.toBBCode('<em>foo</em>')).toEqual('[i]foo[/i]');
+        expect(parser.toBBCode('<u>foo</u>')).toEqual('[u]foo[/u]');
+        expect(parser.toBBCode('<s>foo</s>')).toEqual('[s]foo[/s]');
+        expect(parser.toBBCode('<sub>foo</sub>')).toEqual('[sub]foo[/sub]');
+        expect(parser.toBBCode('<sup>foo</sup>')).toEqual('[sup]foo[/sup]');
+        expect(parser.toBBCode('<span style="font-family: sans-serif">foo</span>')).toEqual('[font=sans-serif]foo[/font]');
+        expect(parser.toBBCode('<span style="font-size: 13px">foo</span>')).toEqual('[size=13px]foo[/size]');
+        expect(parser.toBBCode('<span style="color: rgb(0,0,0)">foo</span>')).toEqual('[color=#000000]foo[/color]');
+        expect(parser.toBBCode('<ul><li>foo</li><li>bar</li></ul>')).toEqual('[ul][li]foo[/li][li]bar[/li][/ul]');
+        expect(parser.toBBCode('<ol><li>foo</li><li>bar</li></ol>')).toEqual('[ol][li]foo[/li][li]bar[/li][/ol]');
+        expect(parser.toBBCode('<img width="300" height="300" src="foo" />')).toEqual('[img=300x300]foo[/img]');
+        expect(parser.toBBCode('<a href="bar">foo</a>')).toEqual('[url=bar]foo[/url]');
+        expect(parser.toBBCode('<a href="mailto:bar">foo</a>')).toEqual('[email=bar]foo[/email]');
+        expect(parser.toBBCode('<blockquote>foo</blockquote>')).toEqual('[quote]foo[/quote]');
+        expect(parser.toBBCode('<blockquote><cite>bar</cite>foo</blockquote>')).toEqual('[quote=bar]foo[/quote]');
+        expect(parser.toBBCode('<code>foo</code>')).toEqual('[code]foo[/code]');
+        expect(parser.toBBCode('<div style="text-align: left">foo</div>')).toEqual('[left]foo[/left]');
+        expect(parser.toBBCode('<div style="text-align: center">foo</div>')).toEqual('[center]foo[/center]');
+        expect(parser.toBBCode('<div style="text-align: right">foo</div>')).toEqual('[right]foo[/right]');
+        expect(parser.toBBCode('<div style="text-align: justify">foo</div>')).toEqual('[justify]foo[/justify]');
+        expect(parser.toBBCode('<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/foo?wmode=opaque" data-youtube-id="foo" allowfullscreen></iframe>')).toEqual('[youtube]foo[/youtube]');
+        expect(parser.toBBCode('<div style="direction: rtl">foo</div>')).toEqual('[rtl]foo[/rtl]');
+        expect(parser.toBBCode('<div style="direction: ltr">foo</div>')).toEqual('[ltr]foo[/ltr]');
+    });
 })

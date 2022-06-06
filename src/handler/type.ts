@@ -6,29 +6,23 @@
  */
 
 import { QuoteType } from '../constants';
-import { FormatFn, HTMLFn } from '../type';
+import { Condition } from '../type';
+import { Token, TokenAttributes } from '../token';
 
 export type Handler = {
     /**
-     * All matching tags will be passed to the format function or string to be converted into BBCode.
-     *
-     * default: undefined
-     */
-    tags?: Record<string, any>,
-    /**
-     * All matching tags will be passed to the format function or string to be converted into BBCode.
-     *
-     * default: undefined
-     */
-    styles?: Record<string, string[]>,
-    /**
      * Should be either a string in the format "[b]{0}[/b]" where {0} will be replaced with the BBCode tags content.
      */
-    format?: string | FormatFn,
+    bbcode?: string | ((token: Token, attrs: TokenAttributes, content: string) => string),
+
+    /**
+     * HTML matching criteria
+     */
+    conditions?: Condition[],
     /**
      * Should be either a string in the format "<strong>{0}</strong>" where {0} will be replaced with the HTML tags content.
      */
-    html: string | HTMLFn,
+    html: string | ((token: Token, attrs: TokenAttributes, content: string) => string),
     /**
      * The attribute quote type.
      *

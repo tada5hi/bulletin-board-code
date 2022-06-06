@@ -94,7 +94,7 @@ export function tokenizeTag(type: `${TokenType}`, input: string) {
     return new Token(type, name, input, attrs);
 }
 
-export function tokenize(input: string) : Token[] {
+export function tokenizeBBCode(input: string) : Token[] {
     // The token types in reverse order of precedence
     const tokenTypes : {type: `${TokenType}`, regex: RegExp}[] = [
         { type: TokenType.CONTENT, regex: /^([^[\r\n]+|\[)/ },

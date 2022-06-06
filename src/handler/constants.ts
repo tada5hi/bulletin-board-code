@@ -10,111 +10,119 @@ import { QuoteType } from '../constants';
 import {
     escapeEntities,
     escapeUriScheme,
-    getAttribute,
-    getCss,
-    getHeight,
-    getWidth,
-    hasSelector,
     normaliseColor,
-    setAttribute,
     stripQuotes,
 } from './utils';
+import { getObjectPathValue } from '../utils';
+import { convertHTMLToBBCode } from '../parser/utils';
 
 /* istanbul ignore next */
 export const Handlers : Record<string, Handler> = {
     // START_COMMAND: Bold
     b: {
-        tags: {
-            b: null,
-            strong: null,
-        },
-        styles: {
-            // 401 is for FF 3.5
-            'font-weight': ['bold', 'bolder', '401', '700', '800', '900'],
-        },
-        format: '[b]{0}[/b]',
+        conditions: [
+            { tag: 'b' },
+            { tag: 'strong' },
+            {
+                attribute: {
+                    style: {
+                        fontWeight: ['bold', 'bolder', '401', '700', '800', '900'],
+                    },
+                },
+            },
+        ],
+        bbcode: '[b]{0}[/b]',
         html: '<strong>{0}</strong>',
     },
     // END_COMMAND
 
     // START_COMMAND: Italic
     i: {
-        tags: {
-            i: null,
-            em: null,
-        },
-        styles: {
-            'font-style': ['italic', 'oblique'],
-        },
-        format: '[i]{0}[/i]',
+        conditions: [
+            { tag: 'i' },
+            { tag: 'em' },
+            {
+                attribute: {
+                    style: {
+                        textDecoration: ['italic', 'oblique'],
+                    },
+                },
+            },
+        ],
+        bbcode: '[i]{0}[/i]',
         html: '<em>{0}</em>',
     },
     // END_COMMAND
 
     // START_COMMAND: Underline
     u: {
-        tags: {
-            u: null,
-        },
-        styles: {
-            'text-decoration': ['underline'],
-        },
-        format: '[u]{0}[/u]',
+        conditions: [
+            { tag: 'u' },
+            {
+                attribute: {
+                    style: {
+                        textDecoration: ['underline'],
+                    },
+                },
+            },
+        ],
+        bbcode: '[u]{0}[/u]',
         html: '<u>{0}</u>',
     },
     // END_COMMAND
 
     // START_COMMAND: Strikethrough
     s: {
-        tags: {
-            s: null,
-            strike: null,
-        },
-        styles: {
-            'text-decoration': ['line-through'],
-        },
-        format: '[s]{0}[/s]',
+        conditions: [
+            { tag: 's' },
+            { tag: 'strike' },
+            {
+                attribute: {
+                    style: {
+                        textDecoration: ['line-through'],
+                    },
+                },
+            },
+        ],
+        bbcode: '[s]{0}[/s]',
         html: '<s>{0}</s>',
     },
     // END_COMMAND
 
     // START_COMMAND: Subscript
     sub: {
-        tags: {
-            sub: null,
-        },
-        format: '[sub]{0}[/sub]',
+        conditions: [
+            { tag: 'sub' },
+        ],
+        bbcode: '[sub]{0}[/sub]',
         html: '<sub>{0}</sub>',
     },
     // END_COMMAND
 
     // START_COMMAND: Superscript
     sup: {
-        tags: {
-            sup: null,
-        },
-        format: '[sup]{0}[/sup]',
+        conditions: [
+            { tag: 'sup' },
+        ],
+        bbcode: '[sup]{0}[/sup]',
         html: '<sup>{0}</sup>',
     },
     // END_COMMAND
 
     // START_COMMAND: Font
     font: {
-        tags: {
-            font: {
-                face: null,
+        conditions: [
+            {
+                attribute: {
+                    style: {
+                        fontFamily: null,
+                    },
+                },
             },
-        },
-        styles: {
-            'font-family': null,
-        },
+        ],
         quoteType: QuoteType.never,
-        format(element, content) {
-            let font = getAttribute(element, 'face');
-
-            if (!hasSelector(element, 'font') || !font) {
-                font = getCss(element, 'fontFamily');
-            }
+        bbcode(element, attr, content) {
+            const font = getObjectPathValue(attr, 'style.fontFamily');
 
             return `[font=${stripQuotes(font)}]${content}[/font]`;
         },
@@ -124,50 +132,23 @@ export const Handlers : Record<string, Handler> = {
 
     // START_COMMAND: Size
     size: {
-        tags: {
-            font: {
-                size: null,
+        conditions: [
+            {
+                attribute: {
+                    style: {
+                        fontSize: null,
+                    },
+                },
             },
-        },
-        styles: {
-            'font-size': null,
-        },
-        format(element, content) {
-            let fontSize : unknown = getAttribute(element, 'size');
-            let size = 2;
+        ],
+        bbcode(token, attrs, content) {
+            let fontSize : unknown = getObjectPathValue(attrs, 'size');
 
             if (!fontSize) {
-                fontSize = getCss(element, 'fontSize');
+                fontSize = getObjectPathValue(attrs, 'style.fontSize');
             }
 
-            // Most browsers return px value but IE returns 1-7
-            if (`${fontSize}`.indexOf('px') > -1) {
-                // convert size to an int
-                fontSize = Number(`${fontSize}`.replace('px', ''));
-
-                if (fontSize < 12) {
-                    size = 1;
-                }
-                if (fontSize > 15) {
-                    size = 3;
-                }
-                if (fontSize > 17) {
-                    size = 4;
-                }
-                if (fontSize > 23) {
-                    size = 5;
-                }
-                if (fontSize > 31) {
-                    size = 6;
-                }
-                if (fontSize > 47) {
-                    size = 7;
-                }
-            } else {
-                size = Number(fontSize);
-            }
-
-            return `[size=${size}]${content}[/size]`;
+            return `[size=${fontSize}]${content}[/size]`;
         },
         html: '<span style="font-size: {default}">{!0}</span>',
     },
@@ -175,20 +156,21 @@ export const Handlers : Record<string, Handler> = {
 
     // START_COMMAND: Color
     color: {
-        tags: {
-            font: {
-                color: null,
+        conditions: [
+            {
+                attribute: {
+                    style: {
+                        color: null,
+                    },
+                },
             },
-        },
-        styles: {
-            color: null,
-        },
+        ],
         quoteType: QuoteType.never,
-        format(elm, content) {
-            let color = getAttribute(elm, 'color');
+        bbcode(token, attrs, content) {
+            let color = getObjectPathValue(attrs, 'color');
 
-            if (!hasSelector(elm, 'font') || !color) {
-                color = elm.style.color || getCss(elm, 'color');
+            if (!color) {
+                color = getObjectPathValue(attrs, 'style.color');
             }
 
             return `[color=${normaliseColor(color)}]${
@@ -202,13 +184,13 @@ export const Handlers : Record<string, Handler> = {
 
     // START_COMMAND: Lists
     ul: {
-        tags: {
-            ul: null,
-        },
+        conditions: [
+            { tag: 'ul' },
+        ],
         breakStart: true,
         isInline: false,
         skipLastLineBreak: true,
-        format: '[ul]{0}[/ul]',
+        bbcode: '[ul]{0}[/ul]',
         html: '<ul>{0}</ul>',
     },
     list: {
@@ -218,22 +200,22 @@ export const Handlers : Record<string, Handler> = {
         html: '<ul>{0}</ul>',
     },
     ol: {
-        tags: {
-            ol: null,
-        },
+        conditions: [
+            { tag: 'ol' },
+        ],
         breakStart: true,
         isInline: false,
         skipLastLineBreak: true,
-        format: '[ol]{0}[/ol]',
+        bbcode: '[ol]{0}[/ol]',
         html: '<ol>{0}</ol>',
     },
     li: {
-        tags: {
-            li: null,
-        },
+        conditions: [
+            { tag: 'li' },
+        ],
         isInline: true,
         closedBy: ['/ul', '/ol', '/list', '*', 'li'],
-        format: '[li]{0}[/li]',
+        bbcode: '[li]{0}[/li]',
         html: '<li>{0}</li>',
     },
     '*': {
@@ -245,40 +227,40 @@ export const Handlers : Record<string, Handler> = {
 
     // START_COMMAND: Table
     table: {
-        tags: {
-            table: null,
-        },
+        conditions: [
+            { tag: 'table' },
+        ],
         isInline: false,
         isHtmlInline: true,
         skipLastLineBreak: true,
-        format: '[table]{0}[/table]',
+        bbcode: '[table]{0}[/table]',
         html: '<table>{0}</table>',
     },
     tr: {
-        tags: {
-            tr: null,
-        },
+        conditions: [
+            { tag: 'tr' },
+        ],
         isInline: false,
         skipLastLineBreak: true,
-        format: '[tr]{0}[/tr]',
+        bbcode: '[tr]{0}[/tr]',
         html: '<tr>{0}</tr>',
     },
     th: {
-        tags: {
-            th: null,
-        },
+        conditions: [
+            { tag: 'tr' },
+        ],
         allowsEmpty: true,
         isInline: false,
-        format: '[th]{0}[/th]',
+        bbcode: '[th]{0}[/th]',
         html: '<th>{0}</th>',
     },
     td: {
-        tags: {
-            td: null,
-        },
+        conditions: [
+            { tag: 'td' },
+        ],
         allowsEmpty: true,
         isInline: false,
-        format: '[td]{0}[/td]',
+        bbcode: '[td]{0}[/td]',
         html: '<td>{0}</td>',
     },
     // END_COMMAND
@@ -288,13 +270,13 @@ export const Handlers : Record<string, Handler> = {
 
     // START_COMMAND: Horizontal Rule
     hr: {
-        tags: {
-            hr: null,
-        },
+        conditions: [
+            { tag: 'hr' },
+        ],
         allowsEmpty: true,
         isSelfClosing: true,
         isInline: false,
-        format: '[hr]{0}',
+        bbcode: '[hr]{0}',
         html: '<hr />',
     },
     // END_COMMAND
@@ -302,28 +284,23 @@ export const Handlers : Record<string, Handler> = {
     // START_COMMAND: Image
     img: {
         allowsEmpty: true,
-        tags: {
-            img: {
-                src: null,
-            },
-        },
+        conditions: [
+            { tag: 'img', attribute: { src: null } },
+        ],
         allowedChildren: ['#'],
         quoteType: QuoteType.never,
-        format(element, content) {
+        bbcode(token, attrs, content) {
             let attribs = '';
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const style = (name: string) => (element.style ? element.style[name] : null);
 
-            const width = getAttribute(element, 'width') || style('width');
-            const height = getAttribute(element, 'height') || style('height');
+            const width = getObjectPathValue(attrs, 'width') || getObjectPathValue(attrs, 'style.width');
+            const height = getObjectPathValue(attrs, 'height') || getObjectPathValue(attrs, 'style.height');
 
             // only add width and height if one is specified
             if (width && height) {
-                attribs = `=${getWidth(element)}x${getHeight(element)}`;
+                attribs = `=${width}x${height}`;
             }
 
-            return `[img${attribs}]${getAttribute(element, 'src')}[/img]`;
+            return `[img${attribs}]${getObjectPathValue(attrs, 'src')}[/img]`;
         },
         html(token, attrs, content) {
             let width : string;
@@ -360,19 +337,17 @@ export const Handlers : Record<string, Handler> = {
     // START_COMMAND: URL
     url: {
         allowsEmpty: true,
-        tags: {
-            a: {
-                href: null,
-            },
-        },
+        conditions: [
+            { tag: 'a', attribute: { href: null } },
+        ],
         quoteType: QuoteType.never,
-        format(element, content) {
-            const url = getAttribute(element, 'href');
+        bbcode(token, attrs, content) {
+            const url = getObjectPathValue(attrs, 'href');
 
             // make sure this link is not an e-mail,
             // if it is return e-mail BBCode
             if (url.substring(0, 7) === 'mailto:') {
-                return `[email="${url.substring(7)}"]${content}[/email]`;
+                return `[email=${url.substring(7)}]${content}[/email]`;
             }
 
             return `[url=${url}]${content}[/url]`;
@@ -388,7 +363,7 @@ export const Handlers : Record<string, Handler> = {
     // START_COMMAND: E-mail
     email: {
         quoteType: QuoteType.never,
-        format: '[email]{0}[/email]',
+        bbcode: '[email]{0}[/email]',
         html(token, attrs, content) {
             return `<a href="mailto:${escapeEntities(attrs.default, true) || content}">${content}</a>`;
         },
@@ -397,45 +372,35 @@ export const Handlers : Record<string, Handler> = {
 
     // START_COMMAND: Quote
     quote: {
-        tags: {
-            blockquote: null,
-        },
+        conditions: [
+            { tag: 'blockquote' },
+        ],
         isInline: false,
         quoteType: QuoteType.never,
-        format(element, content) {
+        bbcode(token, attrs, content) {
             const authorAttr = 'data-author';
-            let author = '';
-            let cite;
-            const { children } = element;
+            let author = getObjectPathValue(attrs, authorAttr);
+            if (!author) {
+                let index = -1;
 
-            for (let i = 0; !cite && i < children.length; i++) {
-                if (hasSelector(children[i], 'cite')) {
-                    cite = children[i];
+                for (let i = 0; i < token.children.length; i++) {
+                    if (token.children[i].name.toLowerCase() === 'cite') {
+                        index = i;
+                    }
+                }
+
+                if (index > -1) {
+                    const citeChild = token.children[index].children[0];
+                    if (citeChild) {
+                        author = citeChild.value.replace(/(^\s+|\s+$)/g, '');
+
+                        token.children.splice(index, 1);
+                        content = convertHTMLToBBCode(token.children);
+                    }
                 }
             }
 
-            if (cite || getAttribute(element, authorAttr)) {
-                if (cite && cite.textContent) {
-                    author = cite.textContent;
-                } else {
-                    author = getAttribute(element, authorAttr);
-                }
-
-                setAttribute(element, authorAttr, author);
-
-                if (cite) {
-                    element.removeChild(cite);
-                }
-
-                content = this.elementToBbcode(element);
-                author = `=${author.replace(/(^\s+|\s+$)/g, '')}`;
-
-                if (cite) {
-                    element.insertBefore(cite, element.firstChild);
-                }
-            }
-
-            return `[quote${author}]${content}[/quote]`;
+            return `[quote${(author ? `=${author}` : '')}]${content}[/quote]`;
         },
         html(token, attrs, content) {
             if (attrs.default) {
@@ -449,80 +414,104 @@ export const Handlers : Record<string, Handler> = {
 
     // START_COMMAND: Code
     code: {
-        tags: {
-            code: null,
-        },
+        conditions: [
+            { tag: 'code' },
+        ],
         isInline: false,
         allowedChildren: ['#', '#newline'],
-        format: '[code]{0}[/code]',
+        bbcode: '[code]{0}[/code]',
         html: '<code>{0}</code>',
     },
     // END_COMMAND
 
     // START_COMMAND: Left
     left: {
-        styles: {
-            'text-align': [
-                'left',
-                '-webkit-left',
-                '-moz-left',
-                '-khtml-left',
-            ],
-        },
+        conditions: [
+            {
+                attribute: {
+                    style: {
+                        textAlign: [
+                            'left',
+                            '-webkit-left',
+                            '-moz-left',
+                            '-khtml-left',
+                        ],
+                    },
+                },
+            },
+        ],
         isInline: false,
         allowsEmpty: true,
-        format: '[left]{0}[/left]',
+        bbcode: '[left]{0}[/left]',
         html: '<div style="text-align: left">{0}</div>',
     },
     // END_COMMAND
 
     // START_COMMAND: Centre
     center: {
-        styles: {
-            'text-align': [
-                'center',
-                '-webkit-center',
-                '-moz-center',
-                '-khtml-center',
-            ],
-        },
+        conditions: [
+            {
+                attribute: {
+                    style: {
+                        textAlign: [
+                            'center',
+                            '-webkit-center',
+                            '-moz-center',
+                            '-khtml-center',
+                        ],
+                    },
+                },
+            },
+        ],
         isInline: false,
         allowsEmpty: true,
-        format: '[center]{0}[/center]',
+        bbcode: '[center]{0}[/center]',
         html: '<div style="text-align: center">{0}</div>',
     },
     // END_COMMAND
 
     // START_COMMAND: Right
     right: {
-        styles: {
-            'text-align': [
-                'right',
-                '-webkit-right',
-                '-moz-right',
-                '-khtml-right',
-            ],
-        },
+        conditions: [
+            {
+                attribute: {
+                    style: {
+                        textAlign: [
+                            'right',
+                            '-webkit-right',
+                            '-moz-right',
+                            '-khtml-right',
+                        ],
+                    },
+                },
+            },
+        ],
         isInline: false,
         allowsEmpty: true,
-        format: '[right]{0}[/right]',
+        bbcode: '[right]{0}[/right]',
         html: '<div style="text-align: right">{0}</div>',
     },
     // END_COMMAND
 
     // START_COMMAND: Justify
     justify: {
-        styles: {
-            'text-align': [
-                'justify',
-                '-webkit-justify',
-                '-moz-justify',
-                '-khtml-justify',
-            ],
-        },
+        conditions: [
+            {
+                attribute: {
+                    style: {
+                        textAlign: [
+                            'justify',
+                            '-webkit-justify',
+                            '-moz-justify',
+                            '-khtml-justify',
+                        ],
+                    },
+                },
+            },
+        ],
         isInline: false,
         allowsEmpty: true,
-        format: '[justify]{0}[/justify]',
+        bbcode: '[justify]{0}[/justify]',
         html: '<div style="text-align: justify">{0}</div>',
     },
     // END_COMMAND
@@ -530,13 +519,11 @@ export const Handlers : Record<string, Handler> = {
     // START_COMMAND: YouTube
     youtube: {
         allowsEmpty: true,
-        tags: {
-            iframe: {
-                'data-youtube-id': null,
-            },
-        },
-        format(element, content) {
-            const value = getAttribute(element, 'data-youtube-id');
+        conditions: [
+            { tag: 'iframe', attribute: { 'data-youtube-id': null } },
+        ],
+        bbcode(token, attrs, content) {
+            const value = getObjectPathValue(attrs, 'data-youtube-id');
 
             return value ? `[youtube]${value}[/youtube]` : value;
         },
@@ -548,22 +535,34 @@ export const Handlers : Record<string, Handler> = {
 
     // START_COMMAND: Rtl
     rtl: {
-        styles: {
-            direction: ['rtl'],
-        },
+        conditions: [
+            {
+                attribute: {
+                    style: {
+                        direction: ['rtl'],
+                    },
+                },
+            },
+        ],
         isInline: false,
-        format: '[rtl]{0}[/rtl]',
+        bbcode: '[rtl]{0}[/rtl]',
         html: '<div style="direction: rtl">{0}</div>',
     },
     // END_COMMAND
 
     // START_COMMAND: Ltr
     ltr: {
-        styles: {
-            direction: ['ltr'],
-        },
+        conditions: [
+            {
+                attribute: {
+                    style: {
+                        direction: ['ltr'],
+                    },
+                },
+            },
+        ],
         isInline: false,
-        format: '[ltr]{0}[/ltr]',
+        bbcode: '[ltr]{0}[/ltr]',
         html: '<div style="direction: ltr">{0}</div>',
     },
     // END_COMMAND

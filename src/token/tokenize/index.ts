@@ -5,6 +5,5 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-export * from './bbcode-to-html';
-export * from './bbcode-cleanup';
-export * from './html-to-bbcode';
+export * from './bbcode';
+export * from './html';

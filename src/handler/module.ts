@@ -7,7 +7,7 @@
 
 import { Handlers } from './constants';
 import { Handler } from './type';
-import { extendHandler } from './utils/extend';
+import { extendHandler } from './utils';
 
 let instance : Record<string, Handler>;
 

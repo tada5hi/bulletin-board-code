@@ -10,4 +10,3 @@ export * from './has';
 export * from './nesting';
 export * from './normalize';
 export * from './parse';
-export * from './tokenize';

@@ -11,10 +11,10 @@ import {
     normalizeTokenNewLines,
     parseTokens,
     removeEmptyTokens,
-    tokenize,
+    tokenizeBBCode, tokenizeHTML,
 } from '../token';
 import { ParserInterface, ParserOptions } from './type';
-import { convertToBBCode, convertToHTML } from './utils';
+import { cleanupBBCode, convertBBCodeToHTML, convertHTMLToBBCode } from './utils';
 import { ParserDefaultOptions } from './constants';
 
 export class Parser implements ParserInterface {
@@ -24,8 +24,8 @@ export class Parser implements ParserInterface {
         this.options = { ...ParserDefaultOptions, ...(options || {}) };
     }
 
-    parse(input: string, preserveNewLines?: boolean) : Token[] {
-        const tokens = parseTokens(tokenize(input), this.options.fixInvalidChildren);
+    parseBBCode(input: string, preserveNewLines?: boolean) : Token[] {
+        const tokens = parseTokens(tokenizeBBCode(input), this.options.fixInvalidChildren);
 
         if (this.options.fixInvalidNesting) {
             fixNestingTokens({
@@ -48,19 +48,31 @@ export class Parser implements ParserInterface {
         return tokens;
     }
 
+    parseHTML(input: string) {
+        return tokenizeHTML(input);
+    }
+
     // ----------------------------------------------------------
 
     toHTML(input: string, preserveNewLines?: boolean) : string {
-        return convertToHTML(this, this.parse(input, preserveNewLines), true);
+        return convertBBCodeToHTML(this.parseBBCode(input, preserveNewLines), true);
     }
 
     fromBBCode(input: string, preserveNewLines?: boolean) : string {
         return this.toHTML(input, preserveNewLines);
     }
 
+    cleanup(input: string, preserveNewLines?: boolean) : string {
+        return cleanupBBCode(this.parseBBCode(input, preserveNewLines), this.options);
+    }
+
     // ----------------------------------------------------------
 
-    cleanup(input: string, preserveNewLines?: boolean) : string {
-        return convertToBBCode(this.parse(input, preserveNewLines), this.options);
+    toBBCode(input: string, preserveNewLines?: boolean) : string {
+        return convertHTMLToBBCode(this.parseHTML(input), true);
+    }
+
+    fromHTML(input: string) {
+        return this.toBBCode(input);
     }
 }

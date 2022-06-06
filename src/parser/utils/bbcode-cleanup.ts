@@ -24,7 +24,7 @@ function quote(str: string, quoteType: `${QuoteType}` | ((str: string, name: str
     return `"${str.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 }
 
-export function convertToBBCode(tokens: Token[], options: ParserOptions) {
+export function cleanupBBCode(tokens: Token[], options: ParserOptions) {
     let attr;
     let bbcode;
     let isBlock;
@@ -60,7 +60,7 @@ export function convertToBBCode(tokens: Token[], options: ParserOptions) {
             ret += token.value;
 
             if (token.children) {
-                ret += convertToBBCode(token.children, options);
+                ret += cleanupBBCode(token.children, options);
             }
 
             if (token.closing) {
@@ -95,7 +95,7 @@ export function convertToBBCode(tokens: Token[], options: ParserOptions) {
 
             // Convert the tags children to BBCode
             if (token.children) {
-                ret += convertToBBCode(token.children, options);
+                ret += cleanupBBCode(token.children, options);
             }
 
             // add closing tag if not self-closing

@@ -9,7 +9,7 @@ import { QuoteType } from '../constants';
 import { Token } from '../token';
 
 export interface ParserInterface {
-    parse(input: string, preserveNewLines: boolean) : Token[],
+    parseBBCode(input: string, preserveNewLines: boolean) : Token[],
 
     toHTML(input: string, preserveNewLines: boolean) : string;
     fromBBCode(input: string, preserveNewLines: boolean) : string;

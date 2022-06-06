@@ -9,3 +9,5 @@ export * from './color';
 export * from './common';
 export * from './dom';
 export * from './escape';
+export * from './extend';
+export * from './find';

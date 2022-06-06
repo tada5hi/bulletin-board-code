@@ -5,7 +5,15 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Token, TokenAttributes } from './token';
+export type Attribute = {
+    style?: {
+        [T in keyof CSSStyleDeclaration]?: string[] | null
+    },
+    class?: string[],
+    [key: string]: any
+};
 
-export type FormatFn = (element: HTMLElement, content: string) => string;
-export type HTMLFn = (token: Token, attrs: TokenAttributes, content: string) => string;
+export type Condition = {
+    tag?: string,
+    attribute?: Partial<Attribute>
+};

@@ -7,10 +7,9 @@
 
 import { Token, TokenType } from '../../token';
 import { Handler, getHandler } from '../../handler';
-import { ParserInterface } from '../type';
 import { escapeEntities } from '../../handler/utils';
 
-function formatBBCodeString(str: string, obj: Record<string, any>) {
+export function formatString(str: string, obj: Record<string, any>) {
     return str.replace(/\{([^}]+)\}/g, (match, group) => {
         let escape = true;
 
@@ -31,7 +30,7 @@ function formatBBCodeString(str: string, obj: Record<string, any>) {
     });
 }
 
-export function convertToHTML(parser: ParserInterface, tokens: Token[], isRoot: boolean) {
+export function convertBBCodeToHTML(tokens: Token[], isRoot: boolean) {
     let bbcode;
     let content;
     let html;
@@ -56,7 +55,7 @@ export function convertToHTML(parser: ParserInterface, tokens: Token[], isRoot: 
                 const lastChild = token.children[token.children.length - 1] || {} as Token;
 
                 bbcode = getHandler(token.name);
-                content = convertToHTML(parser, token.children, false);
+                content = convertBBCodeToHTML(token.children, false);
 
                 if (bbcode && bbcode.html) {
                     // Only add a line break to the end if this is
@@ -73,13 +72,12 @@ export function convertToHTML(parser: ParserInterface, tokens: Token[], isRoot: 
 
                     if (typeof bbcode.html !== 'function') {
                         token.attrs['0'] = content;
-                        html = formatBBCodeString(
+                        html = formatString(
                             bbcode.html,
                             token.attrs,
                         );
                     } else {
-                        html = bbcode.html.call(
-                            parser,
+                        html = bbcode.html(
                             token,
                             token.attrs,
                             content,

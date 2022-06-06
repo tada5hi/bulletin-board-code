@@ -6,7 +6,9 @@
  */
 
 export type TokenAttributes = {
-    default?: string
+    default?: string,
+    class?: string[],
+    style?: Record<string, any>
 } & {
     [key: string]: any
 };
