@@ -8,6 +8,7 @@
 import { Handlers } from './constants';
 import { Handler } from './type';
 import { extendHandler } from './utils';
+import { hasOwnProperty } from '../utils';
 
 let instance : Record<string, Handler>;
 
@@ -38,10 +39,14 @@ export function setHandler(key: string, value: Handler) {
     instance[key] = value;
 }
 
-export function unsetHandler(key: string) {
+export function unsetHandler(key: string | string[]) {
     useHandlers();
 
-    if (Object.prototype.hasOwnProperty.call(instance, key)) {
-        delete instance[key];
+    const keys = Array.isArray(key) ? key : [key];
+
+    for (let i = 0; i < keys.length; i++) {
+        if (hasOwnProperty(instance, keys[i])) {
+            delete instance[keys[i]];
+        }
     }
 }
