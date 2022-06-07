@@ -25,6 +25,23 @@ function parseStyles(input: string) {
         }), {});
 }
 
+const selfClosingTags : string[] = [
+    'area',
+    'base',
+    'br',
+    'col',
+    'embed',
+    'hr',
+    'img',
+    'input',
+    'link',
+    'meta',
+    'param',
+    'source',
+    'track',
+    'wbr',
+];
+
 function parseNode(node: Node) : Token[] {
     const tokens : Token[] = [];
 
@@ -37,11 +54,27 @@ function parseNode(node: Node) : Token[] {
                     children.push(...parseNode(element.childNodes[i]));
                 }
 
-                const token = new Token(TokenType.OPEN, element.tagName, element.tagName, {
-                    ...element.attrs,
-                    ...(element.attrs.style ? { style: parseStyles(element.attrs.style) } : {}),
-                    class: Array.from(element.classList.values()),
-                }, children);
+                let closingToken : Token | undefined;
+                if (selfClosingTags.indexOf(element.tagName.toLowerCase()) === -1) {
+                    closingToken = new Token(
+                        TokenType.CLOSE,
+                        element.tagName.toLowerCase(),
+                        `</${element.tagName.toLowerCase()}>`,
+                    );
+                }
+
+                const token = new Token(
+                    TokenType.OPEN,
+                    element.tagName.toLowerCase(),
+                    `<${element.tagName.toLowerCase()}>`,
+                    {
+                        ...element.attrs,
+                        ...(element.attrs.style ? { style: parseStyles(element.attrs.style) } : {}),
+                        class: Array.from(element.classList.values()),
+                    },
+                    children,
+                    closingToken,
+                );
 
                 tokens.push(token);
             } else {

@@ -73,8 +73,8 @@ const parser = new Parser();
 console.log(parser.toHTML('[h1]foo[/h1]'));
 // [h1]foo[/h1]
 
-console.log(parser.toHTML('[h1]foo[/h1]'));
-// [h1]foo[/h1]
+console.log(parser.toBBCode('<h1>foo</h1>'));
+// <h1>foo</h1>
 ```
 
 ### BBCode To HTML
