@@ -21,12 +21,15 @@
         "test": "cross-env NODE_ENV=test jest --config ./test/jest.config.js",
         "test:coverage": "cross-env NODE_ENV=test jest --config ./test/jest.config.js --coverage",
         "lint": "eslint --ext .js,.vue,.ts ./src",
-        "lint:fix": "npm run lint -- --fix"
+        "lint:fix": "npm run lint -- --fix",
+        "pub": "npm run build && np"
     },
     "keywords": [
         "bbcode",
+        "html",
         "parser",
         "bbcode-to-html",
+        "html-to-bbcode",
         "tokenizer"
     ],
     "license": "MIT",
