@@ -10,7 +10,7 @@ import { Handler, getHandler } from '../../handler';
 import { escapeEntities } from '../../handler/utils';
 import { formatString } from '../../utils';
 
-export function convertBBCodeToHTML(tokens: Token[], isRoot: boolean) {
+export function convertBBCodeToHTML(tokens: Token[], isRoot: boolean, strict?: boolean) {
     let bbcode;
     let content;
     let html;
@@ -35,7 +35,7 @@ export function convertBBCodeToHTML(tokens: Token[], isRoot: boolean) {
                 const lastChild = token.children[token.children.length - 1] || {} as Token;
 
                 bbcode = getHandler(token.name);
-                content = convertBBCodeToHTML([...token.children], false);
+                content = convertBBCodeToHTML([...token.children], false, strict);
 
                 if (bbcode && bbcode.html) {
                     // Only add a line break to the end if this is
@@ -63,7 +63,7 @@ export function convertBBCodeToHTML(tokens: Token[], isRoot: boolean) {
                             content,
                         });
                     }
-                } else {
+                } else if (!strict) {
                     html = token.value + content + (token.closing ? token.closing.value : '');
                 }
                 break;

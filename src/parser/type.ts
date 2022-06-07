@@ -72,5 +72,11 @@ export type ParserOptions = {
      *
      * default: QuoteType.auto
      */
-    quoteType: `${QuoteType}`
+    quoteType: `${QuoteType}`,
+
+    /**
+     * Strict handler match.
+     * Otherwise, library will attempt to construct html or bbcode without handler.
+     */
+    strict: boolean
 };

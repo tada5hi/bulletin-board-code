@@ -423,7 +423,7 @@ export const Handlers : Record<string, Handler> = {
                         author = citeChild.value.replace(/(^\s+|\s+$)/g, '');
 
                         context.token.children.splice(index, 1);
-                        context.content = convertHTMLToBBCode(context.token.children);
+                        context.content = convertHTMLToBBCode(context.token.children, false, true);
                     }
                 }
             }

@@ -65,4 +65,10 @@ export const ParserDefaultOptions : ParserOptions = {
      * Attribute quote type
      */
     quoteType: QuoteType.auto,
+
+    /**
+     * Strict handler match.
+     * Otherwise, library will attempt to construct html or bbcode without handler.
+     */
+    strict: true,
 };

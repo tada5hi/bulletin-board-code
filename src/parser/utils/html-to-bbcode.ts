@@ -10,7 +10,7 @@ import { escapeEntities, findHandlerForHTMLToken } from '../../handler/utils';
 import { Handler } from '../../handler';
 import { formatString } from '../../utils';
 
-export function convertHTMLToBBCode(tokens: Token[], isRoot?: boolean) {
+export function convertHTMLToBBCode(tokens: Token[], isRoot?: boolean, strict?: boolean) {
     let output = '';
 
     const isInline = (bbcode: Handler) => typeof bbcode === 'undefined' || (
@@ -31,7 +31,7 @@ export function convertHTMLToBBCode(tokens: Token[], isRoot?: boolean) {
                 const lastChild = token.children[token.children.length - 1] || {} as Token;
 
                 const handler = findHandlerForHTMLToken(token);
-                let content = convertHTMLToBBCode([...token.children], false);
+                let content = convertHTMLToBBCode([...token.children], false, strict);
 
                 if (handler && handler.bbcode) {
                     if (
@@ -54,7 +54,7 @@ export function convertHTMLToBBCode(tokens: Token[], isRoot?: boolean) {
                             content,
                         });
                     }
-                } else {
+                } else if (!strict) {
                     output += token.value + content + (token.closing ? token.closing.value : '');
                 }
                 break;

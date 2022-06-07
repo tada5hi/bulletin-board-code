@@ -55,7 +55,7 @@ export class Parser implements ParserInterface {
     // ----------------------------------------------------------
 
     toHTML(input: string, preserveNewLines?: boolean) : string {
-        return convertBBCodeToHTML(this.parseBBCode(input, preserveNewLines), true);
+        return convertBBCodeToHTML(this.parseBBCode(input, preserveNewLines), true, this.options.strict);
     }
 
     fromBBCode(input: string, preserveNewLines?: boolean) : string {
@@ -69,7 +69,7 @@ export class Parser implements ParserInterface {
     // ----------------------------------------------------------
 
     toBBCode(input: string, preserveNewLines?: boolean) : string {
-        return convertHTMLToBBCode(this.parseHTML(input), true);
+        return convertHTMLToBBCode(this.parseHTML(input), true, this.options.strict);
     }
 
     fromHTML(input: string) {
