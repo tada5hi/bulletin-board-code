@@ -12,6 +12,12 @@ describe('src/parser/*.ts', () => {
     it('should convert bbcode to html string', () => {
         const parser = new Parser();
 
+        expect(parser.toHTML('[h1]foo[/h1]')).toEqual('<h1>foo</h1>');
+        expect(parser.toHTML('[h2]foo[/h2]')).toEqual('<h2>foo</h2>');
+        expect(parser.toHTML('[h3]foo[/h3]')).toEqual('<h3>foo</h3>');
+        expect(parser.toHTML('[h4]foo[/h4]')).toEqual('<h4>foo</h4>');
+        expect(parser.toHTML('[h5]foo[/h5]')).toEqual('<h5>foo</h5>');
+        expect(parser.toHTML('[h6]foo[/h6]')).toEqual('<h6>foo</h6>');
         expect(parser.toHTML('[b]foo[/b]')).toEqual('<strong>foo</strong>');
         expect(parser.toHTML('[i]foo[/i]')).toEqual('<em>foo</em>');
         expect(parser.toHTML('[u]foo[/u]')).toEqual('<u>foo</u>');
@@ -66,6 +72,12 @@ describe('src/parser/*.ts', () => {
     it('should convert html to bbcode string', () => {
         const parser = new Parser();
 
+        expect(parser.toBBCode('<h1>foo</h1>')).toEqual('[h1]foo[/h1]');
+        expect(parser.toBBCode('<h2>foo</h2>')).toEqual('[h2]foo[/h2]');
+        expect(parser.toBBCode('<h3>foo</h3>')).toEqual('[h3]foo[/h3]');
+        expect(parser.toBBCode('<h4>foo</h4>')).toEqual('[h4]foo[/h4]');
+        expect(parser.toBBCode('<h5>foo</h5>')).toEqual('[h5]foo[/h5]');
+        expect(parser.toBBCode('<h6>foo</h6>')).toEqual('[h6]foo[/h6]');
         expect(parser.toBBCode('<strong>foo</strong>')).toEqual('[b]foo[/b]');
         expect(parser.toBBCode('<em>foo</em>')).toEqual('[i]foo[/i]');
         expect(parser.toBBCode('<u>foo</u>')).toEqual('[u]foo[/u]');

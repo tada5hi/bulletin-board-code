@@ -18,6 +18,36 @@ import { convertHTMLToBBCode } from '../parser/utils';
 
 /* istanbul ignore next */
 export const Handlers : Record<string, Handler> = {
+    h1: {
+        conditions: [{ tag: 'h1' }],
+        bbcode: '[h1]{0}[/h1]',
+        html: '<h1>{0}</h1>',
+    },
+    h2: {
+        conditions: [{ tag: 'h2' }],
+        bbcode: '[h2]{0}[/h2]',
+        html: '<h2>{0}</h2>',
+    },
+    h3: {
+        conditions: [{ tag: 'h3' }],
+        bbcode: '[h3]{0}[/h3]',
+        html: '<h3>{0}</h3>',
+    },
+    h4: {
+        conditions: [{ tag: 'h4' }],
+        bbcode: '[h4]{0}[/h4]',
+        html: '<h4>{0}</h4>',
+    },
+    h5: {
+        conditions: [{ tag: 'h5' }],
+        bbcode: '[h5]{0}[/h5]',
+        html: '<h5>{0}</h5>',
+    },
+    h6: {
+        conditions: [{ tag: 'h6' }],
+        bbcode: '[h6]{0}[/h6]',
+        html: '<h6>{0}</h6>',
+    },
     // START_COMMAND: Bold
     b: {
         conditions: [

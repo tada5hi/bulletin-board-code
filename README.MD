@@ -3,13 +3,25 @@
 [![CI](https://github.com/tada5hi/bulletin-board-code/actions/workflows/main.yml/badge.svg)](https://github.com/tada5hi/bulletin-board-code/actions/workflows/main.yml)
 
 # Bulletin Board Code 🧙
-**B**ulletin **B**oard **Code** (BBCode) is a library to parse a string containing BBCodes to HTML.
-Furthermore, it is also possible to clean the input string.
+**B**ulletin **B**oard **Code** (BBCode) is a library to transform a string from:
+- BBCode to HTML
+- HTML to BBCode
 
 **Table of Contents**
 
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Handlers](#handlers)
+  - [BBCode to HTML](#bbcode-to-html)
+  - [HTML to BBCode]()
+
+---
+**Important NOTE**
+
+The `README.md` file is still under construction ☂ at the moment.
+So please stay patient or contribute to it, till it covers all parts ⭐.
+
+---
 
 ## Installation
 
@@ -19,7 +31,53 @@ npm install bulletin-board-code --save
 
 ## Usage
 
-BBCode to HTML:
+### Handlers
+
+A handler describes how parsed tokens should be transformed to HTML or BBCode.
+Furthermore, the handler specifies conditions, when to match with a token.
+
+**Set**
+
+The `setHandler` method allows adding or overwriting an existing handler.
+
+```typescript
+import { Parser, setHandler } from 'bulletin-board-code';
+
+setHandler('lazy', {
+    conditions: [{ attribute: { lazy: null } }],
+    bbcode: '[lazy]{0}[/lazy]',
+    html: '<span lazy="true">lazy: {0}</span>'
+});
+
+const parser = new Parser();
+
+console.log(parser.toHTML('[lazy]foo[/lazy]'));
+// <span lazy="true">lazy: foo</span>
+
+console.log(parser.toBBCode('<span lazy="true">lazy: foo</span>'));
+// [lazy]foo[/lazy]
+```
+
+**Unset**
+
+The `unsetHandler` method can be used to remove one or many handlers.
+
+```typescript
+import { Parser, unsetHandler } from 'bulletin-board-code';
+
+unsetHandler('h1');
+unsetHandler(['h2', 'h3']);
+
+const parser = new Parser();
+
+console.log(parser.toHTML('[h1]foo[/h1]'));
+// [h1]foo[/h1]
+
+console.log(parser.toHTML('[h1]foo[/h1]'));
+// [h1]foo[/h1]
+```
+
+### BBCode To HTML
 
 ```typescript
 import { Parser } from 'bulletin-board-code';
@@ -27,23 +85,19 @@ import { Parser } from 'bulletin-board-code';
 // initialize the parser
 const parser = new Parser();
 
-console.log(parser.toHTML('[b]foo[/b])'));
+console.log(parser.toHTML('[b]foo[/b]'));
 // <strong>foo</strong>
 
 ```
 
-Custom BBCode TO HTML:
+### HTML To BBCode
 
 ```typescript
-import { Parser, setHandler } from 'bulletin-board-code';
+import { Parser } from 'bulletin-board-code';
 
-setHandler('lazy', {
-    html: '<span>lazy: {0}</span>'
-});
-
+// initialize the parser
 const parser = new Parser();
 
-console.log(parser.toHTML('[lazy]foo[/lazy]'));
-// <span>lazy: foo</span>
-
+console.log(parser.toBBCode('<strong>foo</strong>'));
+// [b]foo[/b]
 ```
