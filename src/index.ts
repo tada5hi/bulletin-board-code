@@ -9,4 +9,3 @@ export * from './constants';
 export * from './handler';
 export * from './parser';
 export * from './token';
-export * from './type';

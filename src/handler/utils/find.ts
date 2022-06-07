@@ -6,9 +6,8 @@
  */
 
 import { Token } from '../../token';
-import { Handler } from '../type';
+import { Condition, Handler } from '../type';
 import { hasOwnProperty } from '../../utils';
-import { Condition } from '../../type';
 import { useHandlers } from '../module';
 
 /**

@@ -6,23 +6,42 @@
  */
 
 import { QuoteType } from '../constants';
-import { Condition } from '../type';
 import { Token, TokenAttributes } from '../token';
+
+export type Attribute = {
+    style?: {
+        [T in keyof CSSStyleDeclaration]?: string[] | null
+    },
+    class?: string[],
+    [key: string]: any
+};
+
+export type Condition = {
+    tag?: string,
+    attribute?: Partial<Attribute>
+};
+
+export type TransformerContext = {
+    token: Token,
+    attributes: TokenAttributes,
+    content: string
+};
 
 export type Handler = {
     /**
      * Should be either a string in the format "[b]{0}[/b]" where {0} will be replaced with the BBCode tags content.
      */
-    bbcode?: string | ((token: Token, attrs: TokenAttributes, content: string) => string),
+    bbcode?: string | ((context: TransformerContext) => string),
 
     /**
-     * HTML matching criteria
+     * Match conditions for handler.
      */
     conditions?: Condition[],
     /**
      * Should be either a string in the format "<strong>{0}</strong>" where {0} will be replaced with the HTML tags content.
      */
-    html: string | ((token: Token, attrs: TokenAttributes, content: string) => string),
+    html: string | ((context: TransformerContext) => string),
+
     /**
      * The attribute quote type.
      *

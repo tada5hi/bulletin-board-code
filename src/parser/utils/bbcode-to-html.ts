@@ -57,11 +57,11 @@ export function convertBBCodeToHTML(tokens: Token[], isRoot: boolean) {
                             token.attrs,
                         );
                     } else {
-                        html = bbcode.html(
+                        html = bbcode.html({
                             token,
-                            token.attrs,
+                            attributes: token.attrs,
                             content,
-                        );
+                        });
                     }
                 } else {
                     html = token.value + content + (token.closing ? token.closing.value : '');

@@ -48,8 +48,8 @@ describe('src/parser/*.ts', () => {
         expect(parser.toHTML('[lazy]foo[/lazy]')).toEqual('<span>lazy: foo</span>');
 
         setHandler('lozy', {
-            html: (token, attrs, content) => {
-                return '<span data-test="'+attrs.default+'">'+content+'</span>'
+            html: (context) => {
+                return '<span data-test="'+context.attributes.default+'">'+context.content+'</span>'
             }
         })
 

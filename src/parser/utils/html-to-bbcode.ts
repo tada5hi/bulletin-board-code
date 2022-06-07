@@ -48,11 +48,11 @@ export function convertHTMLToBBCode(tokens: Token[], isRoot?: boolean) {
                         token.attrs['0'] = content;
                         output += formatString(handler.bbcode, token.attrs);
                     } else {
-                        output += handler.bbcode(
+                        output += handler.bbcode({
                             token,
-                            token.attrs,
+                            attributes: token.attrs,
                             content,
-                        );
+                        });
                     }
                 } else {
                     output += token.value + content + (token.closing ? token.closing.value : '');

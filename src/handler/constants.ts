@@ -121,10 +121,10 @@ export const Handlers : Record<string, Handler> = {
             },
         ],
         quoteType: QuoteType.never,
-        bbcode(element, attr, content) {
-            const font = getObjectPathValue(attr, 'style.fontFamily');
+        bbcode(context) {
+            const font = getObjectPathValue(context.attributes, 'style.fontFamily');
 
-            return `[font=${stripQuotes(font)}]${content}[/font]`;
+            return `[font=${stripQuotes(font)}]${context.content}[/font]`;
         },
         html: '<span style="font-family: {default}">{0}</span>',
     },
@@ -141,14 +141,14 @@ export const Handlers : Record<string, Handler> = {
                 },
             },
         ],
-        bbcode(token, attrs, content) {
-            let fontSize : unknown = getObjectPathValue(attrs, 'size');
+        bbcode(context) {
+            let fontSize : unknown = getObjectPathValue(context.attributes, 'size');
 
             if (!fontSize) {
-                fontSize = getObjectPathValue(attrs, 'style.fontSize');
+                fontSize = getObjectPathValue(context.attributes, 'style.fontSize');
             }
 
-            return `[size=${fontSize}]${content}[/size]`;
+            return `[size=${fontSize}]${context.content}[/size]`;
         },
         html: '<span style="font-size: {default}">{!0}</span>',
     },
@@ -166,18 +166,17 @@ export const Handlers : Record<string, Handler> = {
             },
         ],
         quoteType: QuoteType.never,
-        bbcode(token, attrs, content) {
-            let color = getObjectPathValue(attrs, 'color');
+        bbcode(context) {
+            let color = getObjectPathValue(context.attributes, 'color');
 
             if (!color) {
-                color = getObjectPathValue(attrs, 'style.color');
+                color = getObjectPathValue(context.attributes, 'style.color');
             }
 
-            return `[color=${normaliseColor(color)}]${
-                content}[/color]`;
+            return `[color=${normaliseColor(color)}]${context.content}[/color]`;
         },
-        html(token, attrs, content) {
-            return `<span style="color: ${escapeEntities(normaliseColor(attrs.default), true)}">${content}</span>`;
+        html(context) {
+            return `<span style="color: ${escapeEntities(normaliseColor(context.attributes.default), true)}">${context.content}</span>`;
         },
     },
     // END_COMMAND
@@ -289,32 +288,32 @@ export const Handlers : Record<string, Handler> = {
         ],
         allowedChildren: ['#'],
         quoteType: QuoteType.never,
-        bbcode(token, attrs, content) {
+        bbcode(context) {
             let attribs = '';
 
-            const width = getObjectPathValue(attrs, 'width') || getObjectPathValue(attrs, 'style.width');
-            const height = getObjectPathValue(attrs, 'height') || getObjectPathValue(attrs, 'style.height');
+            const width = getObjectPathValue(context.attributes, 'width') || getObjectPathValue(context.attributes, 'style.width');
+            const height = getObjectPathValue(context.attributes, 'height') || getObjectPathValue(context.attributes, 'style.height');
 
             // only add width and height if one is specified
             if (width && height) {
                 attribs = `=${width}x${height}`;
             }
 
-            return `[img${attribs}]${getObjectPathValue(attrs, 'src')}[/img]`;
+            return `[img${attribs}]${getObjectPathValue(context.attributes, 'src')}[/img]`;
         },
-        html(token, attrs, content) {
+        html(context) {
             let width : string;
             let height : string;
             let match;
             let attribs = '';
 
             // handle [img width=340 height=240]url[/img]
-            width = attrs.width;
-            height = attrs.height;
+            width = context.attributes.width;
+            height = context.attributes.height;
 
             // handle [img=340x240]url[/img]
-            if (attrs.default) {
-                match = attrs.default.split(/x/i);
+            if (context.attributes.default) {
+                match = context.attributes.default.split(/x/i);
 
                 // eslint-disable-next-line prefer-destructuring
                 width = match[0];
@@ -329,7 +328,7 @@ export const Handlers : Record<string, Handler> = {
                 attribs += ` height="${escapeEntities(height, true)}"`;
             }
 
-            return `<img${attribs} src="${escapeUriScheme(content)}" />`;
+            return `<img${attribs} src="${escapeUriScheme(context.content)}" />`;
         },
     },
     // END_COMMAND
@@ -341,21 +340,21 @@ export const Handlers : Record<string, Handler> = {
             { tag: 'a', attribute: { href: null } },
         ],
         quoteType: QuoteType.never,
-        bbcode(token, attrs, content) {
-            const url = getObjectPathValue(attrs, 'href');
+        bbcode(context) {
+            const url = getObjectPathValue(context.attributes, 'href');
 
             // make sure this link is not an e-mail,
             // if it is return e-mail BBCode
             if (url.substring(0, 7) === 'mailto:') {
-                return `[email=${url.substring(7)}]${content}[/email]`;
+                return `[email=${url.substring(7)}]${context.content}[/email]`;
             }
 
-            return `[url=${url}]${content}[/url]`;
+            return `[url=${url}]${context.content}[/url]`;
         },
-        html(token, attrs, content) {
-            attrs.default = escapeEntities(attrs.default, true) || content;
+        html(context) {
+            context.attributes.default = escapeEntities(context.attributes.default, true) || context.content;
 
-            return `<a href="${escapeUriScheme(attrs.default)}">${content}</a>`;
+            return `<a href="${escapeUriScheme(context.attributes.default)}">${context.content}</a>`;
         },
     },
     // END_COMMAND
@@ -363,9 +362,8 @@ export const Handlers : Record<string, Handler> = {
     // START_COMMAND: E-mail
     email: {
         quoteType: QuoteType.never,
-        bbcode: '[email]{0}[/email]',
-        html(token, attrs, content) {
-            return `<a href="mailto:${escapeEntities(attrs.default, true) || content}">${content}</a>`;
+        html(context) {
+            return `<a href="mailto:${escapeEntities(context.attributes.default, true) || context.content}">${context.content}</a>`;
         },
     },
     // END_COMMAND
@@ -377,37 +375,37 @@ export const Handlers : Record<string, Handler> = {
         ],
         isInline: false,
         quoteType: QuoteType.never,
-        bbcode(token, attrs, content) {
+        bbcode(context) {
             const authorAttr = 'data-author';
-            let author = getObjectPathValue(attrs, authorAttr);
+            let author = getObjectPathValue(context.attributes, authorAttr);
             if (!author) {
                 let index = -1;
 
-                for (let i = 0; i < token.children.length; i++) {
-                    if (token.children[i].name.toLowerCase() === 'cite') {
+                for (let i = 0; i < context.token.children.length; i++) {
+                    if (context.token.children[i].name.toLowerCase() === 'cite') {
                         index = i;
                     }
                 }
 
                 if (index > -1) {
-                    const citeChild = token.children[index].children[0];
+                    const citeChild = context.token.children[index].children[0];
                     if (citeChild) {
                         author = citeChild.value.replace(/(^\s+|\s+$)/g, '');
 
-                        token.children.splice(index, 1);
-                        content = convertHTMLToBBCode(token.children);
+                        context.token.children.splice(index, 1);
+                        context.content = convertHTMLToBBCode(context.token.children);
                     }
                 }
             }
 
-            return `[quote${(author ? `=${author}` : '')}]${content}[/quote]`;
+            return `[quote${(author ? `=${author}` : '')}]${context.content}[/quote]`;
         },
-        html(token, attrs, content) {
-            if (attrs.default) {
-                content = `<cite>${escapeEntities(attrs.default)}</cite>${content}`;
+        html(context) {
+            if (context.attributes.default) {
+                context.content = `<cite>${escapeEntities(context.attributes.default)}</cite>${context.content}`;
             }
 
-            return `<blockquote>${content}</blockquote>`;
+            return `<blockquote>${context.content}</blockquote>`;
         },
     },
     // END_COMMAND
@@ -522,8 +520,8 @@ export const Handlers : Record<string, Handler> = {
         conditions: [
             { tag: 'iframe', attribute: { 'data-youtube-id': null } },
         ],
-        bbcode(token, attrs, content) {
-            const value = getObjectPathValue(attrs, 'data-youtube-id');
+        bbcode(context) {
+            const value = getObjectPathValue(context.attributes, 'data-youtube-id');
 
             return value ? `[youtube]${value}[/youtube]` : value;
         },
