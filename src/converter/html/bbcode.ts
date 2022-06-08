@@ -6,17 +6,20 @@
  */
 
 import { Token, TokenType } from '../../token';
-import { escapeEntities, findHandlerForHTMLToken } from '../../handler/utils';
 import { Handler } from '../../handler';
+import { escapeEntities, findHandlerForHTMLToken } from '../../handler/utils';
 import { formatString } from '../../utils';
+import { ConverterOptions } from '../type';
 
-export function convertHTMLToBBCode(tokens: Token[], isRoot?: boolean, strict?: boolean) {
+export function convertHTMLToBBCode(tokens: Token[], options?: ConverterOptions) {
+    options = options || {};
+
     let output = '';
 
-    const isInline = (bbcode: Handler) => typeof bbcode === 'undefined' || (
-        typeof bbcode.isHtmlInline !== undefined ?
-            bbcode.isHtmlInline :
-            bbcode.isInline
+    const isInline = (handler: Handler) => typeof handler === 'undefined' || (
+        typeof handler.isHtmlInline !== undefined ?
+            handler.isHtmlInline :
+            handler.isInline
     ) !== false;
 
     while (tokens.length > 0) {
@@ -31,7 +34,10 @@ export function convertHTMLToBBCode(tokens: Token[], isRoot?: boolean, strict?: 
                 const lastChild = token.children[token.children.length - 1] || {} as Token;
 
                 const handler = findHandlerForHTMLToken(token);
-                let content = convertHTMLToBBCode([...token.children], false, strict);
+                let content = convertHTMLToBBCode([...token.children], {
+                    ...options,
+                    isRoot: false,
+                });
 
                 if (handler && handler.bbcode) {
                     if (
@@ -52,15 +58,16 @@ export function convertHTMLToBBCode(tokens: Token[], isRoot?: boolean, strict?: 
                             token,
                             attributes: token.attrs,
                             content,
+                            options,
                         });
                     }
-                } else if (!strict) {
+                } else if (!options.lazy) {
                     output += token.value + content + (token.closing ? token.closing.value : '');
                 }
                 break;
             }
             case TokenType.NEWLINE: {
-                if (!isRoot) {
+                if (!options.isRoot) {
                     output += '\n';
                     // eslint-disable-next-line no-continue
                     continue;

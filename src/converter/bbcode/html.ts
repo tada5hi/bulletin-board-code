@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2022.
+ * Copyright (c) 2022.
  * Author Peter Placzek (tada5hi)
  * For the full copyright and license information,
  * view the LICENSE file that was distributed with this source code.
@@ -7,20 +7,21 @@
 
 import { Token, TokenType } from '../../token';
 import { Handler, getHandler } from '../../handler';
-import { escapeEntities } from '../../handler/utils';
 import { formatString } from '../../utils';
+import { escapeEntities } from '../../handler/utils';
+import { ConverterOptions } from '../type';
 
-export function convertBBCodeToHTML(tokens: Token[], isRoot: boolean, strict?: boolean) {
+export function convertBBCodeToHTML(tokens: Token[], options?: ConverterOptions) {
     let bbcode;
     let content;
     let html;
     let blockWrapOpen;
     let ret = '';
 
-    const isInline = (bbcode: Handler) => typeof bbcode === 'undefined' || (
-        typeof bbcode.isHtmlInline !== undefined ?
-            bbcode.isHtmlInline :
-            bbcode.isInline
+    const isInline = (handler: Handler) => typeof handler === 'undefined' || (
+        typeof handler.isHtmlInline !== undefined ?
+            handler.isHtmlInline :
+            handler.isInline
     ) !== false;
 
     while (tokens.length > 0) {
@@ -35,7 +36,10 @@ export function convertBBCodeToHTML(tokens: Token[], isRoot: boolean, strict?: b
                 const lastChild = token.children[token.children.length - 1] || {} as Token;
 
                 bbcode = getHandler(token.name);
-                content = convertBBCodeToHTML([...token.children], false, strict);
+                content = convertBBCodeToHTML([...token.children], {
+                    ...options,
+                    isRoot: false,
+                });
 
                 if (bbcode && bbcode.html) {
                     // Only add a line break to the end if this is
@@ -61,15 +65,16 @@ export function convertBBCodeToHTML(tokens: Token[], isRoot: boolean, strict?: b
                             token,
                             attributes: token.attrs,
                             content,
+                            options,
                         });
                     }
-                } else if (!strict) {
+                } else if (!options.lazy) {
                     html = token.value + content + (token.closing ? token.closing.value : '');
                 }
                 break;
             }
             case TokenType.NEWLINE: {
-                if (!isRoot) {
+                if (!options.isRoot) {
                     ret += '<br />';
                     // eslint-disable-next-line no-continue
                     continue;

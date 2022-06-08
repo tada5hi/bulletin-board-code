@@ -14,8 +14,9 @@ import {
     tokenizeBBCode, tokenizeHTML,
 } from '../token';
 import { ParserInterface, ParserOptions } from './type';
-import { cleanupBBCode, convertBBCodeToHTML, convertHTMLToBBCode } from './utils';
+import { cleanupBBCode } from './utils';
 import { ParserDefaultOptions } from './constants';
+import { convertBBCodeToHTML, convertHTMLToBBCode } from '../converter';
 
 export class Parser implements ParserInterface {
     protected options: ParserOptions;
@@ -55,7 +56,10 @@ export class Parser implements ParserInterface {
     // ----------------------------------------------------------
 
     toHTML(input: string, preserveNewLines?: boolean) : string {
-        return convertBBCodeToHTML(this.parseBBCode(input, preserveNewLines), true, this.options.strict);
+        return convertBBCodeToHTML(this.parseBBCode(input, preserveNewLines), {
+            isRoot: true,
+            lazy: this.options.lazyTransformation,
+        });
     }
 
     fromBBCode(input: string, preserveNewLines?: boolean) : string {
@@ -69,7 +73,10 @@ export class Parser implements ParserInterface {
     // ----------------------------------------------------------
 
     toBBCode(input: string, preserveNewLines?: boolean) : string {
-        return convertHTMLToBBCode(this.parseHTML(input), true, this.options.strict);
+        return convertHTMLToBBCode(this.parseHTML(input), {
+            isRoot: true,
+            lazy: this.options.lazyTransformation,
+        });
     }
 
     fromHTML(input: string) {

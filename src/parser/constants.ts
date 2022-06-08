@@ -70,5 +70,5 @@ export const ParserDefaultOptions : ParserOptions = {
      * Strict handler match.
      * Otherwise, library will attempt to construct html or bbcode without handler.
      */
-    strict: true,
+    lazyTransformation: true,
 };

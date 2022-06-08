@@ -75,8 +75,8 @@ export type ParserOptions = {
     quoteType: `${QuoteType}`,
 
     /**
-     * Strict handler match.
+     * Lazy transformation without handler.
      * Otherwise, library will attempt to construct html or bbcode without handler.
      */
-    strict: boolean
+    lazyTransformation: boolean
 };

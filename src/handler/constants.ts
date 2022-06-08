@@ -14,7 +14,7 @@ import {
     stripQuotes,
 } from './utils';
 import { getObjectPathValue } from '../utils';
-import { convertHTMLToBBCode } from '../parser/utils';
+import { convertHTMLToBBCode } from '../converter';
 
 /* istanbul ignore next */
 export const Handlers : Record<string, Handler> = {
@@ -423,7 +423,7 @@ export const Handlers : Record<string, Handler> = {
                         author = citeChild.value.replace(/(^\s+|\s+$)/g, '');
 
                         context.token.children.splice(index, 1);
-                        context.content = convertHTMLToBBCode(context.token.children, false, true);
+                        context.content = convertHTMLToBBCode(context.token.children, context.options);
                     }
                 }
             }

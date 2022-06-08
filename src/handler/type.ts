@@ -7,6 +7,7 @@
 
 import { QuoteType } from '../constants';
 import { Token, TokenAttributes } from '../token';
+import { ConverterOptions } from '../converter';
 
 export type Attribute = {
     style?: {
@@ -21,17 +22,18 @@ export type Condition = {
     attribute?: Partial<Attribute>
 };
 
-export type TransformerContext = {
+export type ConverterContext = {
     token: Token,
     attributes: TokenAttributes,
-    content: string
+    content: string,
+    options: ConverterOptions
 };
 
 export type Handler = {
     /**
      * Should be either a string in the format "[b]{0}[/b]" where {0} will be replaced with the BBCode tags content.
      */
-    bbcode?: string | ((context: TransformerContext) => string),
+    bbcode?: string | ((context: ConverterContext) => string),
 
     /**
      * Match conditions for handler.
@@ -40,7 +42,7 @@ export type Handler = {
     /**
      * Should be either a string in the format "<strong>{0}</strong>" where {0} will be replaced with the HTML tags content.
      */
-    html: string | ((context: TransformerContext) => string),
+    html: string | ((context: ConverterContext) => string),
 
     /**
      * The attribute quote type.
