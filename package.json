@@ -34,7 +34,7 @@
     ],
     "license": "MIT",
     "devDependencies": {
-        "@tada5hi/eslint-config-typescript": "^1.0.4",
+        "@tada5hi/eslint-config-typescript": "^1.0.7",
         "@types/jest": "^28.1.4",
         "@types/node": "^18.8.4",
         "coveralls": "^3.1.0",
