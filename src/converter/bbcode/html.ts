@@ -73,6 +73,7 @@ export function convertBBCodeToHTML(tokens: Token[], options?: ConverterOptions)
                 }
                 break;
             }
+            /* istanbul ignore next */
             case TokenType.NEWLINE: {
                 if (!options.isRoot) {
                     ret += '<br />';

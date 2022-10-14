@@ -19,11 +19,16 @@ module.exports = {
     coverageDirectory: 'coverage',
     collectCoverageFrom: [
         'src/**/*.{ts,tsx,js,jsx}',
-        '!src/handler/utils/dom.ts'
+        '!src/handler/utils/color.ts',
+        '!src/handler/utils/dom.ts',
+        '!src/handler/utils/escape.ts',
+        '!src/parser/utils/bbcode-cleanup.ts',
+        '!src/token/utils/nesting.ts',
+        '!src/token/utils/parse.ts'
     ],
     coverageThreshold: {
         global: {
-            branches: 80,
+            branches: 70,
             functions: 80,
             lines: 80,
             statements: 80

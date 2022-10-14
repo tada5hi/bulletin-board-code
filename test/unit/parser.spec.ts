@@ -5,7 +5,7 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import {Parser} from "../../src";
+import {Parser, unsetHandler} from "../../src";
 import {setHandler} from "../../src";
 
 describe('src/parser/*.ts', () => {
@@ -42,6 +42,7 @@ describe('src/parser/*.ts', () => {
         expect(parser.toHTML('[youtube]foo[/youtube]')).toEqual('<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/foo?wmode=opaque" data-youtube-id="foo" allowfullscreen></iframe>');
         expect(parser.toHTML('[rtl]foo[/rtl]')).toEqual('<div style="direction: rtl">foo</div>');
         expect(parser.toHTML('[ltr]foo[/ltr]')).toEqual('<div style="direction: ltr">foo</div>');
+        expect(parser.toHTML('[ltr]foo \n bar[/ltr]')).toEqual('<div style="direction: ltr">foo <br /> bar</div>');
     });
 
     it('should convert new bbcode to html string', () => {
@@ -52,6 +53,10 @@ describe('src/parser/*.ts', () => {
         });
 
         expect(parser.toHTML('[lazy]foo[/lazy]')).toEqual('<span>lazy: foo</span>');
+
+        unsetHandler('lazy');
+
+        expect(parser.toHTML('[lazy]foo[/lazy]')).toEqual('[lazy]foo[/lazy]');
 
         setHandler('lozy', {
             html: (context) => {
