@@ -71,7 +71,7 @@ describe('src/parser/*.ts', () => {
     it('should cleanup bbcode string', () => {
         const parser = new Parser();
 
-        expect(parser.cleanup('[b ]foo[/b]')).toEqual('[b]foo[/b]');
+        expect(parser.cleanupBBCode('[b ]foo[/b]')).toEqual('[b]foo[/b]');
     });
 
     it('should convert html to bbcode string', () => {

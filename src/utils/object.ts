@@ -29,19 +29,3 @@ export function getObjectPathValue<T>(data: T, path: string) : string {
 
     return getObjectPathValue(data[key], parts.join('.'));
 }
-
-export function hasObjectPathKey<T>(data: T, path: string) : boolean {
-    const parts = path.split('.');
-
-    const key = parts.shift();
-
-    if (!hasOwnProperty(data, key)) {
-        return false;
-    }
-
-    if (parts.length === 0) {
-        return true;
-    }
-
-    return hasObjectPathKey(data[key], parts.join('.'));
-}

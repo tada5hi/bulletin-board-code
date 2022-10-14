@@ -1,4 +1,4 @@
-# Bulletin Board Code 🧙
+# Bulletin Board Code ⚗️
 
 [![npm version](https://badge.fury.io/js/bulletin-board-code.svg)](https://badge.fury.io/js/bulletin-board-code)
 [![CI](https://github.com/tada5hi/bulletin-board-code/actions/workflows/main.yml/badge.svg)](https://github.com/tada5hi/bulletin-board-code/actions/workflows/main.yml)
@@ -13,27 +13,27 @@
 **Table of Contents**
 
 - [Installation](#installation)
+- [Features](#features)
 - [Usage](#usage)
   - [BBCode to HTML](#bbcode-to-html)
   - [HTML to BBCode](#html-to-bbcode)
 - [Handlers](#handlers)
   - [Set](#set)
-  - [Unsert](#unset)
+  - [Unset](#unset)
 - [License](#license)
-
----
-**Important NOTE**
-
-The `README.md` file is still under construction ☂ at the moment.
-So please stay patient or contribute to it, till it covers all parts ⭐.
-
----
 
 ## Installation
 
 ```bash
 npm install bulletin-board-code --save
 ```
+
+## Features
+
+- bidirectional conversion between html & bbcode
+- support nested BBCodes
+- automatic repair mode
+- set/unset custom handlers for conversion between html & bbcode
 
 ## Usage
 

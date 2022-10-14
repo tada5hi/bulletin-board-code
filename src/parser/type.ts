@@ -14,7 +14,7 @@ export interface ParserInterface {
     toHTML(input: string, preserveNewLines: boolean) : string;
     fromBBCode(input: string, preserveNewLines: boolean) : string;
 
-    cleanup(input: string, preserveNewLines: boolean) : string;
+    cleanupBBCode(input: string, preserveNewLines: boolean) : string;
 }
 
 export type ParserOptions = {
