@@ -48,7 +48,7 @@
         "@semantic-release/release-notes-generator": "^10.0.3",
         "@tada5hi/eslint-config-typescript": "^1.0.10",
         "@types/jest": "^28.1.4",
-        "@types/node": "^18.11.9",
+        "@types/node": "^18.11.10",
         "cross-env": "^7.0.3",
         "eslint": "^8.28.0",
         "husky": "^8.0.2",
