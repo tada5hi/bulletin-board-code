@@ -50,7 +50,7 @@
         "@types/jest": "^28.1.4",
         "@types/node": "^18.11.15",
         "cross-env": "^7.0.3",
-        "eslint": "^8.29.0",
+        "eslint": "^8.30.0",
         "husky": "^8.0.2",
         "jest": "^28.1.2",
         "semantic-release": "^19.0.5",
