@@ -1,3 +1,10 @@
+## [0.0.4](https://github.com/tada5hi/bulletin-board-code/compare/v0.0.3...v0.0.4) (2023-01-17)
+
+
+### Bug Fixes
+
+* **deps:** bump json5 from 1.0.1 to 1.0.2 ([ea4cb40](https://github.com/tada5hi/bulletin-board-code/commit/ea4cb409e67c719378f95f92402954012bea6e85))
+
 ## [0.0.3](https://github.com/tada5hi/bulletin-board-code/compare/v0.0.2...v0.0.3) (2022-11-15)
 
 
