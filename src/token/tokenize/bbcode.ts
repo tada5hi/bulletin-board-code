@@ -12,7 +12,7 @@ import { Token } from '../module';
 import { TokenAttributes } from '../type';
 
 export function tokenizeAttrs(attrs: string) : Record<string, any> {
-    let matches : RegExpMatchArray = [];
+    let matches : string[] = [];
     /**
      * ([^\s=]+)                Anything that's not a space or equals
      *         =                        Equals sign =
@@ -57,7 +57,7 @@ export function tokenizeAttrs(attrs: string) : Record<string, any> {
 }
 
 export function tokenizeTag(type: `${TokenType}`, input: string) {
-    let matches : RegExpMatchArray = [];
+    let matches : string[] = [];
     let attrs;
     let name;
 
@@ -103,7 +103,7 @@ export function tokenizeBBCode(input: string) : Token[] {
         { type: TokenType.CLOSE, regex: /^\[\/[^[\]]+\]/ },
     ];
 
-    let matches : RegExpMatchArray = [];
+    let matches : string[] = [];
     let type : `${TokenType}`;
     let i : number;
     const tokens = [];
