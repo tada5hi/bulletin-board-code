@@ -1,8 +1,10 @@
+const path = require('node:path');
+
 module.exports = {
     testEnvironment: 'node',
     transform: {
         "^.+\\.tsx?$": [
-            "@swc/jest", {
+            '@swc/jest', {
                 module: {
                     type: "commonjs"
                 },
