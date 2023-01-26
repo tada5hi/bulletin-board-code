@@ -7,7 +7,7 @@
 
 import { Token } from '../../token';
 import { Condition, Handler } from '../type';
-import { hasOwnProperty } from '../../utils';
+import { hasOwnProperty, isObject } from '../../utils';
 import { useHandlers } from '../module';
 
 /**
@@ -31,7 +31,7 @@ function isMatch(one: unknown, two: unknown) {
         return one.some((item) => typeof item === 'string' && item.trim() === `${two}`.trim());
     }
 
-    if (typeof one !== 'object' && typeof two !== 'object') {
+    if (!isObject(one) || !isObject(two)) {
         return false;
     }
 
@@ -98,7 +98,11 @@ function isHandlerMatch(handler: Handler, token: Token) : boolean {
     return false;
 }
 
-export function findHandlerForHTMLToken(token: Token) : Handler | undefined {
+export function findHandlerForHTMLToken(token?: Token) : Handler | undefined {
+    if (typeof token === 'undefined') {
+        return undefined;
+    }
+
     const handlers = useHandlers();
     const keys = Object.keys(handlers);
 

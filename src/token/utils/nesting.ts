@@ -41,7 +41,7 @@ export function fixNestingTokens(context: NestingFixContext) {
     context.rootArr = context.rootArr || context.children;
 
     let token: Token;
-    let parent : Token;
+    let parent : Token | undefined;
     let parentIndex : number;
 
     let parentParentChildren : Token[];
@@ -60,6 +60,9 @@ export function fixNestingTokens(context: NestingFixContext) {
             // if this is a blocklevel element inside an inline one then
             // split the parent at the block level element
             parent = lastArrayElement(context.parents);
+            if (!parent) {
+                continue;
+            }
             right = parent.splitAt(token);
 
             parentParentChildren = context.parents.length > 1 ?

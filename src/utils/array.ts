@@ -5,10 +5,10 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-export function lastArrayElement<T>(arr: T[]) : T | null {
+export function lastArrayElement<T>(arr: T[]) : T | undefined {
     if (arr.length) {
         return arr[arr.length - 1];
     }
 
-    return null;
+    return undefined;
 }

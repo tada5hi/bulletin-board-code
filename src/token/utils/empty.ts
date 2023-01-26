@@ -11,7 +11,7 @@ import { TokenType } from '../constants';
 
 export function removeEmptyTokens(tokens: Token[]) {
     let token : Token;
-    let bbcode : Handler;
+    let bbcode : Handler | undefined;
 
     /**
      * Checks if all children are whitespace or not

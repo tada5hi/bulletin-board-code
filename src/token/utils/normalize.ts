@@ -29,7 +29,7 @@ export function normalizeTokenNewLines(context: NewLinesNormaliseContext) {
     let right : Token | undefined;
 
     let parentHandler : Handler | undefined;
-    let handler : Handler;
+    let handler : Handler | undefined;
 
     let removedBreakEnd;
     let removedBreakBefore;
@@ -48,8 +48,8 @@ export function normalizeTokenNewLines(context: NewLinesNormaliseContext) {
         }
 
         if (token.type === TokenType.NEWLINE) {
-            left = i > 0 ? children[i - 1] : null;
-            right = i < childrenLength - 1 ? children[i + 1] : null;
+            left = i > 0 ? children[i - 1] : undefined;
+            right = i < childrenLength - 1 ? children[i + 1] : undefined;
             remove = false;
 
             // Handle the start and end new lines

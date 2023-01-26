@@ -8,7 +8,7 @@
 import { Token, TokenType } from '../../token';
 import { ParserOptions } from '../type';
 import { QuoteType } from '../../constants';
-import { getHandler } from '../../handler';
+import { Handler, getHandler } from '../../handler';
 
 function quote(str: string, quoteType: `${QuoteType}` | ((str: string, name: string) => string), name: string) {
     const needsQuotes = /\s|=/.test(str);
@@ -25,15 +25,17 @@ function quote(str: string, quoteType: `${QuoteType}` | ((str: string, name: str
 }
 
 export function cleanupBBCode(tokens: Token[], options: ParserOptions) {
-    let attr;
-    let bbcode;
-    let isBlock;
-    let isSelfClosing;
-    let quoteType;
-    let breakBefore;
-    let breakStart;
-    let breakEnd;
-    let breakAfter;
+    let bbcode : Handler | undefined;
+
+    let isBlock : boolean;
+    let isSelfClosing : boolean;
+    let breakBefore : boolean;
+    let breakStart : boolean;
+    let breakEnd : boolean;
+    let breakAfter : boolean;
+
+    let quoteType : `${QuoteType}`;
+
     let ret = '';
 
     while (tokens.length > 0) {
@@ -45,16 +47,25 @@ export function cleanupBBCode(tokens: Token[], options: ParserOptions) {
         }
 
         bbcode = getHandler(token.name);
+        if (bbcode) {
+            isBlock = !(typeof bbcode.isHtmlInline !== undefined ? bbcode.isHtmlInline : bbcode.isInline);
+            isSelfClosing = !!bbcode.isSelfClosing;
 
-        isBlock = !!bbcode && !(typeof bbcode.isHtmlInline !== undefined ? bbcode.isHtmlInline : bbcode.isInline);
-        isSelfClosing = bbcode && bbcode.isSelfClosing;
+            breakBefore = (isBlock && options.breakBeforeBlock && bbcode.breakBefore !== false) || !!bbcode.breakBefore;
+            breakStart = (isBlock && !isSelfClosing && options.breakStartBlock && bbcode.breakStart !== false) || !!bbcode.breakStart;
+            breakEnd = (isBlock && options.breakEndBlock && bbcode.breakEnd !== false) || !!bbcode.breakEnd;
+            breakAfter = (isBlock && options.breakAfterBlock && bbcode.breakAfter !== false) || !!bbcode.breakAfter;
+        } else {
+            isBlock = false;
+            isSelfClosing = false;
 
-        breakBefore = (isBlock && options.breakBeforeBlock && bbcode.breakBefore !== false) || (bbcode && bbcode.breakBefore);
-        breakStart = (isBlock && !isSelfClosing && options.breakStartBlock && bbcode.breakStart !== false) || (bbcode && bbcode.breakStart);
-        breakEnd = (isBlock && options.breakEndBlock && bbcode.breakEnd !== false) || (bbcode && bbcode.breakEnd);
-        breakAfter = (isBlock && options.breakAfterBlock && bbcode.breakAfter !== false) || (bbcode && bbcode.breakAfter);
+            breakBefore = false;
+            breakStart = false;
+            breakEnd = false;
+            breakAfter = false;
+        }
 
-        quoteType = (bbcode ? bbcode.quoteType : null) || options.quoteType || QuoteType.auto;
+        quoteType = bbcode?.quoteType || options.quoteType || QuoteType.auto;
 
         if (!bbcode && token.type === TokenType.OPEN) {
             ret += token.value;
@@ -82,8 +93,8 @@ export function cleanupBBCode(tokens: Token[], options: ParserOptions) {
 
                 const keys = Object.keys(token.attrs);
                 for (let i = 0; i < keys.length; i++) {
-                    if (Object.prototype.hasOwnProperty.call(token.attrs, attr)) {
-                        ret += ` ${attr}=${quote(token.attrs[keys[i]], quoteType, attr)}`;
+                    if (Object.prototype.hasOwnProperty.call(token.attrs, keys[i])) {
+                        ret += ` ${keys[i]}=${quote(token.attrs[keys[i]], quoteType, keys[i])}`;
                     }
                 }
             }
@@ -99,7 +110,7 @@ export function cleanupBBCode(tokens: Token[], options: ParserOptions) {
             }
 
             // add closing tag if not self-closing
-            if (!isSelfClosing && !bbcode.excludeClosing) {
+            if (!isSelfClosing && (bbcode && !bbcode.excludeClosing)) {
                 if (breakEnd) {
                     ret += '\n';
                 }

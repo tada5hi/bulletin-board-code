@@ -11,11 +11,10 @@ import { formatString } from '../../utils';
 import { escapeEntities } from '../../handler/utils';
 import { ConverterOptions } from '../type';
 
-export function convertBBCodeToHTML(tokens: Token[], options?: ConverterOptions) {
-    let bbcode;
-    let content;
-    let html;
-    let blockWrapOpen;
+export function convertBBCodeToHTML(tokens: Token[], options: ConverterOptions = {}) {
+    let bbcode : Handler | undefined;
+    let content : string;
+    let html : string;
     let ret = '';
 
     const isInline = (handler: Handler) => typeof handler === 'undefined' || (
@@ -31,6 +30,8 @@ export function convertBBCodeToHTML(tokens: Token[], options?: ConverterOptions)
             continue;
         }
 
+        html = '';
+
         switch (token.type) {
             case TokenType.OPEN: {
                 const lastChild = token.children[token.children.length - 1] || {} as Token;
@@ -42,11 +43,13 @@ export function convertBBCodeToHTML(tokens: Token[], options?: ConverterOptions)
                 });
 
                 if (bbcode && bbcode.html) {
+                    const lastChildHandler = getHandler(lastChild.name);
                     // Only add a line break to the end if this is
                     // blocklevel and the last child wasn't block-level
                     if (
+                        lastChildHandler &&
                         !isInline(bbcode) &&
-                        isInline(getHandler(lastChild.name)) &&
+                        isInline(lastChildHandler) &&
                         !bbcode.skipLastLineBreak
                     ) {
                         // Add placeholder br to end of block level
@@ -81,11 +84,6 @@ export function convertBBCodeToHTML(tokens: Token[], options?: ConverterOptions)
                     continue;
                 }
 
-                // If not already in a block wrap then start a new block
-                if (!blockWrapOpen) {
-                    ret += '<div>';
-                }
-
                 ret += '<br />';
 
                 // Normally the div acts as a line-break with by moving
@@ -97,8 +95,6 @@ export function convertBBCodeToHTML(tokens: Token[], options?: ConverterOptions)
                 }
 
                 ret += '</div>\n';
-                blockWrapOpen = false;
-                // eslint-disable-next-line no-continue
                 continue;
             }
             default: {
@@ -108,10 +104,6 @@ export function convertBBCodeToHTML(tokens: Token[], options?: ConverterOptions)
         }
 
         ret += html;
-    }
-
-    if (blockWrapOpen) {
-        ret += '</div>\n';
     }
 
     return ret;

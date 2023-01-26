@@ -47,7 +47,7 @@ export class Parser implements ParserInterface {
 
         normalizeTokenNewLines({
             children: tokens,
-            parent: null,
+            parent: undefined,
             options: this.options,
             onlyRemoveBreakAfter: preserveNewLines,
         });

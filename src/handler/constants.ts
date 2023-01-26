@@ -153,7 +153,9 @@ export const Handlers : Record<string, Handler> = {
         quoteType: QuoteType.never,
         bbcode(context) {
             const font = getObjectPathValue(context.attributes, 'style.fontFamily');
-
+            if (!font) {
+                return '';
+            }
             return `[font=${stripQuotes(font)}]${context.content}[/font]`;
         },
         html: '<span style="font-family: {default}">{0}</span>',
@@ -203,9 +205,17 @@ export const Handlers : Record<string, Handler> = {
                 color = getObjectPathValue(context.attributes, 'style.color');
             }
 
+            if (!color) {
+                return '';
+            }
+
             return `[color=${normaliseColor(color)}]${context.content}[/color]`;
         },
         html(context) {
+            if (!context.attributes.default) {
+                return '';
+            }
+
             return `<span style="color: ${escapeEntities(normaliseColor(context.attributes.default), true)}">${context.content}</span>`;
         },
     },
@@ -375,14 +385,14 @@ export const Handlers : Record<string, Handler> = {
 
             // make sure this link is not an e-mail,
             // if it is return e-mail BBCode
-            if (url.substring(0, 7) === 'mailto:') {
+            if (url && url.substring(0, 7) === 'mailto:') {
                 return `[email=${url.substring(7)}]${context.content}[/email]`;
             }
 
             return `[url=${url}]${context.content}[/url]`;
         },
         html(context) {
-            context.attributes.default = escapeEntities(context.attributes.default, true) || context.content;
+            context.attributes.default = context.attributes.default ? escapeEntities(context.attributes.default, true) : context.content;
 
             return `<a href="${escapeUriScheme(context.attributes.default)}">${context.content}</a>`;
         },
@@ -393,7 +403,7 @@ export const Handlers : Record<string, Handler> = {
     email: {
         quoteType: QuoteType.never,
         html(context) {
-            return `<a href="mailto:${escapeEntities(context.attributes.default, true) || context.content}">${context.content}</a>`;
+            return `<a href="mailto:${context.attributes.default ? escapeEntities(context.attributes.default, true) : context.content}">${context.content}</a>`;
         },
     },
     // END_COMMAND
@@ -553,7 +563,7 @@ export const Handlers : Record<string, Handler> = {
         bbcode(context) {
             const value = getObjectPathValue(context.attributes, 'data-youtube-id');
 
-            return value ? `[youtube]${value}[/youtube]` : value;
+            return value ? `[youtube]${value}[/youtube]` : '';
         },
         html: '<iframe width="560" height="315" ' +
             'src="https://www.youtube-nocookie.com/embed/{0}?wmode=opaque" ' +

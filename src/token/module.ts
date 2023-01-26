@@ -45,7 +45,7 @@ export class Token {
             this.value,
             { ...this.attrs },
             [],
-            this.closing ? this.closing.clone() : null,
+            this.closing ? this.closing.clone() : undefined,
         );
     }
 

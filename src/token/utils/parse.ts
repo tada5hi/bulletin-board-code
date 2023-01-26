@@ -9,21 +9,24 @@ import { Token, TokenType, hasToken } from '../index';
 import { Handler, getHandler } from '../../handler';
 import { lastArrayElement } from '../../utils';
 
-export function isChildAllowed(parent: Token, child: Token, fixInvalidChildren?: boolean) {
+export function isChildAllowed(parent: Token | undefined, child: Token, fixInvalidChildren?: boolean) {
     const parentBBCode = parent ? getHandler(parent.name) : {} as Handler;
-    const { allowedChildren } = parentBBCode;
 
-    if (fixInvalidChildren && allowedChildren) {
-        return allowedChildren.indexOf(child.name || '#') > -1;
+    if (
+        fixInvalidChildren &&
+        parentBBCode &&
+        parentBBCode.allowedChildren
+    ) {
+        return parentBBCode.allowedChildren.indexOf(child.name || '#') > -1;
     }
 
     return true;
 }
 
 export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
-    let token : Token;
-    let handler : Handler;
-    let curTok : Token;
+    let token : Token | undefined;
+    let handler : Handler | undefined;
+    let curTok : Token | undefined;
     let clone : Token;
     let i;
     let next;
@@ -32,24 +35,26 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
     const output : Token[] = [];
     const openTags : Token[] = [];
 
-    const currentTag = () : Token => lastArrayElement(openTags);
+    const currentTag = () => lastArrayElement(openTags);
     const addTag = (token: Token) => {
-        if (currentTag()) {
-            currentTag().children.push(token);
+        const curr = currentTag();
+        if (curr) {
+            curr.children.push(token);
         } else {
             output.push(token);
         }
     };
 
     const closesCurrentTag = (name: string) => {
-        currentTag();
-
         const tag = currentTag();
         if (!tag) {
             return false;
         }
 
         const bbcode = getHandler(tag.name);
+        if (!bbcode) {
+            return false;
+        }
 
         return bbcode.closedBy && bbcode.closedBy.indexOf(name) > -1;
     };
@@ -73,8 +78,9 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
          */
         // Ignore tags that can't be children
         if (!isChildAllowed(currentTag(), token, fixInvalidChildren)) {
+            const curr = currentTag();
             // exclude closing tags of current tag
-            if (token.type !== TokenType.CLOSE || !currentTag() || token.name !== currentTag().name) {
+            if (token.type !== TokenType.CLOSE || !curr || token.name !== curr.name) {
                 token.name = '#';
                 token.type = TokenType.CONTENT;
             }
@@ -110,18 +116,19 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
                 }
                 break;
 
-            case TokenType.CLOSE:
+            case TokenType.CLOSE: {
+                const curr = currentTag();
                 // check if this closes the current tag,
                 // e.g. [/list] would close an open [*]
-                if (currentTag() && token.name !== currentTag().name &&
+                if (curr && token.name !== curr.name &&
                     closesCurrentTag(`/${token.name}`)) {
                     openTags.pop();
                 }
 
                 // If this is closing the currently open tag just pop
                 // the close tag off the open tags array
-                if (currentTag() && token.name === currentTag().name) {
-                    currentTag().closing = token;
+                if (curr && token.name === curr.name) {
+                    curr.closing = token;
                     openTags.pop();
 
                     // If this is closing an open tag that is the parent of
@@ -145,7 +152,10 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
                         clone = curTok.clone();
 
                         if (cloned.length) {
-                            clone.children.push(lastArrayElement(cloned));
+                            const lastElement = lastArrayElement(cloned);
+                            if (lastElement) {
+                                clone.children.push(lastElement);
+                            }
                         }
 
                         cloned.push(clone);
@@ -162,7 +172,10 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
 
                     // Add the last cloned child to the now current tag
                     // (the parent of the tag which was being closed)
-                    addTag(lastArrayElement(cloned));
+                    const lastElement = lastArrayElement(cloned);
+                    if (lastElement) {
+                        addTag(lastElement);
+                    }
 
                     // Add all the cloned tags to the open tags list
                     i = cloned.length;
@@ -178,8 +191,10 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
                     addTag(token);
                 }
                 break;
+            }
+            case TokenType.NEWLINE: {
+                const curr = currentTag();
 
-            case TokenType.NEWLINE:
                 // handle things like
                 //     [*]list\nitem\n[*]list1
                 // where it should come out as
@@ -187,14 +202,14 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
                 // instead of
                 //     [*]list\nitem\n[/*][*]list1[/*]
                 if (
-                    currentTag() &&
+                    curr &&
                     next &&
                     closesCurrentTag((next.type === TokenType.CLOSE ? '/' : '') + next.name)
                 ) {
                     // skip if the next tag is the closing tag for
                     // the option tag, i.e. [/*]
-                    if (!(next.type === TokenType.CLOSE && next.name === currentTag().name)) {
-                        handler = getHandler(currentTag().name);
+                    if (!(next.type === TokenType.CLOSE && next.name === curr.name)) {
+                        handler = getHandler(curr.name);
 
                         if (handler && handler.breakAfter) {
                             openTags.pop();
@@ -206,6 +221,7 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
 
                 addTag(token);
                 break;
+            }
             default:
                 addTag(token);
                 break;

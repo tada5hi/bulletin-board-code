@@ -7,12 +7,12 @@
 
 import { hasOwnProperty } from './has-own-property';
 
-export function getObjectPathValue<T>(data: T, path: string) : string {
+export function getObjectPathValue<T extends Record<string, any>>(data: T, path: string) : string | undefined {
     const parts = path.split('.');
 
     const key = parts.shift();
 
-    if (!hasOwnProperty(data, key)) {
+    if (!key || !hasOwnProperty(data, key)) {
         return undefined;
     }
 
@@ -28,4 +28,12 @@ export function getObjectPathValue<T>(data: T, path: string) : string {
     }
 
     return getObjectPathValue(data[key], parts.join('.'));
+}
+
+export function isObject(item: unknown) : item is Record<string, any> {
+    return (
+        !!item &&
+        typeof item === 'object' &&
+        !Array.isArray(item)
+    );
 }

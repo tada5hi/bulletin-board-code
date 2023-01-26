@@ -31,7 +31,7 @@ export function convertHTMLToBBCode(tokens: Token[], options?: ConverterOptions)
 
         switch (token.type) {
             case TokenType.OPEN: {
-                const lastChild = token.children[token.children.length - 1] || {} as Token;
+                const lastChild : Token | undefined = token.children[token.children.length - 1];
 
                 const handler = findHandlerForHTMLToken(token);
                 let content = convertHTMLToBBCode([...token.children], {
@@ -40,9 +40,11 @@ export function convertHTMLToBBCode(tokens: Token[], options?: ConverterOptions)
                 });
 
                 if (handler && handler.bbcode) {
+                    const lastChildHandler = findHandlerForHTMLToken(lastChild);
                     if (
+                        lastChildHandler &&
                         !isInline(handler) &&
-                        isInline(findHandlerForHTMLToken(lastChild)) &&
+                        isInline(lastChildHandler) &&
                         !handler.skipLastLineBreak
                     ) {
                         // Add placeholder br to end of block level
