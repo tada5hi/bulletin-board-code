@@ -1,3 +1,15 @@
+# [0.1.0](https://github.com/tada5hi/bulletin-board-code/compare/v0.0.4...v0.1.0) (2023-01-26)
+
+
+### Bug Fixes
+
+* **deps:** updated dependencies + add declaration files ([e6a355b](https://github.com/tada5hi/bulletin-board-code/commit/e6a355b7a9bf494fe1a7fda6c35215cbb346b74d))
+
+
+### Features
+
+* cleanup codebase & use rollup + swc for transpiling and bundling ([7f80db3](https://github.com/tada5hi/bulletin-board-code/commit/7f80db3cdfb629306b113e63cda665bbebfc9829))
+
 ## [0.0.4](https://github.com/tada5hi/bulletin-board-code/compare/v0.0.3...v0.0.4) (2023-01-17)
 
 
