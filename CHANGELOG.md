@@ -1,3 +1,10 @@
+## [0.1.1](https://github.com/tada5hi/bulletin-board-code/compare/v0.1.0...v0.1.1) (2023-03-16)
+
+
+### Bug Fixes
+
+* **deps:** bump minimist and commitizen ([#137](https://github.com/tada5hi/bulletin-board-code/issues/137)) ([79e5e2c](https://github.com/tada5hi/bulletin-board-code/commit/79e5e2c0118aa7ea112f9bf138fb7179356c13fb))
+
 # [0.1.0](https://github.com/tada5hi/bulletin-board-code/compare/v0.0.4...v0.1.0) (2023-01-26)
 
 
