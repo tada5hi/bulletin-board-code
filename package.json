@@ -64,7 +64,7 @@
         "husky": "^8.0.3",
         "jest": "^27.5.1",
         "rimraf": "^4.4.0",
-        "rollup": "^3.21.6",
+        "rollup": "^3.22.0",
         "semantic-release": "^21.0.2",
         "ts-node": "^10.9.1",
         "typescript": "^5.0.4"
