@@ -9,7 +9,6 @@ import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import pkg from './package.json' assert { type: 'json' };
 import { transform } from "@swc/core";
-import terser from "@rollup/plugin-terser";
 
 const extensions = [
     '.js', '.mjs', '.cjs', '.jsx', '.ts', '.tsx',
@@ -45,14 +44,12 @@ export default [
                         sourceMaps: true
                     });
                 }
-            },
-            terser()
+            }
         ],
         output: [
             {
                 file: pkg.main,
                 format: 'cjs',
-                footer: 'module.exports = Object.assign(exports.default, exports);',
                 exports: 'named',
                 sourcemap: true
             }, {
