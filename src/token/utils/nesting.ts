@@ -5,7 +5,8 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Token, TokenType } from '../index';
+import type { Token } from '../index';
+import { TokenType } from '../index';
 import { getHandler } from '../../handler';
 import { isChildAllowed } from './parse';
 import { lastArrayElement } from '../../utils';

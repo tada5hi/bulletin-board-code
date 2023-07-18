@@ -5,8 +5,10 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Token, TokenType, hasToken } from '../index';
-import { Handler, getHandler } from '../../handler';
+import type { Token } from '../index';
+import { TokenType, hasToken } from '../index';
+import type { Handler } from '../../handler';
+import { getHandler } from '../../handler';
 import { lastArrayElement } from '../../utils';
 
 export function isChildAllowed(parent: Token | undefined, child: Token, fixInvalidChildren?: boolean) {

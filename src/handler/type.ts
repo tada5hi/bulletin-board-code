@@ -5,9 +5,9 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { QuoteType } from '../constants';
-import { Token, TokenAttributes } from '../token';
-import { ConverterOptions } from '../converter';
+import type { QuoteType } from '../constants';
+import type { Token, TokenAttributes } from '../token';
+import type { ConverterOptions } from '../converter';
 
 export type Attribute = {
     style?: {

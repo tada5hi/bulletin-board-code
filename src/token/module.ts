@@ -5,8 +5,8 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { TokenType } from './constants';
-import { TokenAttributes } from './type';
+import type { TokenType } from './constants';
+import type { TokenAttributes } from './type';
 
 export class Token {
     public type : `${TokenType}`;

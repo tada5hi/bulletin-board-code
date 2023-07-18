@@ -5,9 +5,8 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import {
-    HTMLElement, Node, NodeType, TextNode, parse,
-} from 'node-html-parser';
+import type { HTMLElement, Node, TextNode } from 'node-html-parser';
+import { NodeType, parse } from 'node-html-parser';
 import { Token } from '../module';
 import { TokenType } from '../constants';
 

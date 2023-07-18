@@ -5,8 +5,8 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Token } from '../../token';
-import { Condition, Handler } from '../type';
+import type { Token } from '../../token';
+import type { Condition, Handler } from '../type';
 import { hasOwnProperty, isObject } from '../../utils';
 import { useHandlers } from '../module';
 

@@ -5,19 +5,20 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Token, TokenType } from '../../token';
-import { Handler } from '../../handler';
+import type { Token } from '../../token';
+import { TokenType } from '../../token';
+import type { Handler } from '../../handler';
 import { escapeEntities, findHandlerForHTMLToken } from '../../handler/utils';
 import { formatString } from '../../utils';
-import { ConverterOptions } from '../type';
+import type { ConverterOptions } from '../type';
 
 export function convertHTMLToBBCode(tokens: Token[], options?: ConverterOptions) {
     options = options || {};
 
     let output = '';
 
-    const isInline = (handler: Handler) => typeof handler === 'undefined' || (
-        typeof handler.isHtmlInline !== undefined ?
+    const isInline = (handler: Handler) : boolean => typeof handler === 'undefined' || (
+        typeof handler.isHtmlInline !== 'undefined' ?
             handler.isHtmlInline :
             handler.isInline
     ) !== false;

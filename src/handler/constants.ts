@@ -5,7 +5,7 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Handler } from './type';
+import type { Handler } from './type';
 import { QuoteType } from '../constants';
 import {
     escapeEntities,
@@ -360,11 +360,11 @@ export const Handlers : Record<string, Handler> = {
                 height = (match.length === 2 ? match[1] : match[0]);
             }
 
-            if (typeof width !== undefined) {
+            if (typeof width !== 'undefined') {
                 attribs += ` width="${escapeEntities(width, true)}"`;
             }
 
-            if (typeof height !== undefined) {
+            if (typeof height !== 'undefined') {
                 attribs += ` height="${escapeEntities(height, true)}"`;
             }
 

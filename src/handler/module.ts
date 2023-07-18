@@ -6,7 +6,7 @@
  */
 
 import { Handlers } from './constants';
-import { Handler } from './type';
+import type { Handler } from './type';
 import { extendHandler } from './utils';
 import { hasOwnProperty } from '../utils';
 

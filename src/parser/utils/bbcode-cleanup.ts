@@ -5,10 +5,12 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Token, TokenType } from '../../token';
-import { ParserOptions } from '../type';
+import type { Token } from '../../token';
+import { TokenType } from '../../token';
+import type { ParserOptions } from '../type';
 import { QuoteType } from '../../constants';
-import { Handler, getHandler } from '../../handler';
+import type { Handler } from '../../handler';
+import { getHandler } from '../../handler';
 
 function quote(str: string, quoteType: `${QuoteType}` | ((str: string, name: string) => string), name: string) {
     const needsQuotes = /\s|=/.test(str);
@@ -48,7 +50,7 @@ export function cleanupBBCode(tokens: Token[], options: ParserOptions) {
 
         bbcode = getHandler(token.name);
         if (bbcode) {
-            isBlock = !(typeof bbcode.isHtmlInline !== undefined ? bbcode.isHtmlInline : bbcode.isInline);
+            isBlock = !(typeof bbcode.isHtmlInline !== 'undefined' ? bbcode.isHtmlInline : bbcode.isInline);
             isSelfClosing = !!bbcode.isSelfClosing;
 
             breakBefore = (isBlock && options.breakBeforeBlock && bbcode.breakBefore !== false) || !!bbcode.breakBefore;

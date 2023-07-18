@@ -5,9 +5,11 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Token, TokenType } from '../index';
-import { Handler, getHandler } from '../../handler';
-import { ParserOptions } from '../../parser';
+import type { Token } from '../index';
+import { TokenType } from '../index';
+import type { Handler } from '../../handler';
+import { getHandler } from '../../handler';
+import type { ParserOptions } from '../../parser';
 
 type NewLinesNormaliseContext = {
     children: Token[],

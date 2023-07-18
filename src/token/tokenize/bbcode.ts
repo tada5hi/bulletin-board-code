@@ -9,7 +9,7 @@ import { stripQuotes } from '../../handler/utils';
 import { TokenType } from '../constants';
 import { getHandler } from '../../handler';
 import { Token } from '../module';
-import { TokenAttributes } from '../type';
+import type { TokenAttributes } from '../type';
 
 export function tokenizeAttrs(attrs: string) : Record<string, any> {
     let matches : string[] | null = [];

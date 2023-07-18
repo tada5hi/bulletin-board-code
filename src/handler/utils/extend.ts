@@ -5,7 +5,7 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Handler } from '../type';
+import type { Handler } from '../type';
 
 export function extendHandler(handler: Handler) {
     return {

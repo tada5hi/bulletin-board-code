@@ -5,8 +5,9 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Token } from '../module';
-import { Handler, getHandler } from '../../handler';
+import type { Token } from '../module';
+import type { Handler } from '../../handler';
+import { getHandler } from '../../handler';
 import { TokenType } from '../constants';
 
 export function removeEmptyTokens(tokens: Token[]) {

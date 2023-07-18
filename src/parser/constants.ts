@@ -5,7 +5,7 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { ParserOptions } from './type';
+import type { ParserOptions } from './type';
 import { QuoteType } from '../constants';
 
 export const ParserDefaultOptions : ParserOptions = {

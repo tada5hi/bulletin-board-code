@@ -5,15 +5,15 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
+import type { Token } from '../token';
 import {
-    Token,
     fixNestingTokens,
     normalizeTokenNewLines,
     parseTokens,
     removeEmptyTokens,
     tokenizeBBCode, tokenizeHTML,
 } from '../token';
-import { ParserInterface, ParserOptions } from './type';
+import type { ParserInterface, ParserOptions } from './type';
 import { cleanupBBCode } from './utils';
 import { ParserDefaultOptions } from './constants';
 import { convertBBCodeToHTML, convertHTMLToBBCode } from '../converter';

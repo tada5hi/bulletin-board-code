@@ -5,11 +5,13 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Token, TokenType } from '../../token';
-import { Handler, getHandler } from '../../handler';
+import type { Token } from '../../token';
+import { TokenType } from '../../token';
+import type { Handler } from '../../handler';
+import { getHandler } from '../../handler';
 import { formatString } from '../../utils';
 import { escapeEntities } from '../../handler/utils';
-import { ConverterOptions } from '../type';
+import type { ConverterOptions } from '../type';
 
 export function convertBBCodeToHTML(tokens: Token[], options: ConverterOptions = {}) {
     let bbcode : Handler | undefined;
@@ -17,8 +19,8 @@ export function convertBBCodeToHTML(tokens: Token[], options: ConverterOptions =
     let html : string;
     let ret = '';
 
-    const isInline = (handler: Handler) => typeof handler === 'undefined' || (
-        typeof handler.isHtmlInline !== undefined ?
+    const isInline = (handler: Handler) : boolean => typeof handler === 'undefined' || (
+        typeof handler.isHtmlInline !== 'undefined' ?
             handler.isHtmlInline :
             handler.isInline
     ) !== false;

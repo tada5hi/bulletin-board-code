@@ -19,7 +19,7 @@ export function formatString(str: string, obj: Record<string, any>) {
             escape = false;
         }
 
-        if (typeof obj[group] === undefined) {
+        if (typeof obj[group] === 'undefined') {
             return match;
         }
 
