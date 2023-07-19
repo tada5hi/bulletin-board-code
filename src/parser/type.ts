@@ -85,6 +85,8 @@ export type ParserOptions = {
     /**
      * Lazy transformation without handler.
      * Otherwise, library will attempt to construct html or bbcode without handler.
+     *
+     * default: true
      */
     lazyTransformation: boolean
 };

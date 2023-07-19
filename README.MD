@@ -171,7 +171,8 @@ declare type ParserOptions = {
     fixInvalidNesting: boolean,
 
     /**
-     * If to fix invalid children. i.e. A tag which is inside a parent that doesn’t allow that type of tag as a child.
+     * If to fix invalid children. i.e.
+     * A tag which is inside a parent that doesn’t allow that type of tag as a child.
      *
      * default: true
      */
@@ -187,6 +188,8 @@ declare type ParserOptions = {
     /**
      * Lazy transformation without handler.
      * Otherwise, library will attempt to construct html or bbcode without handler.
+     *
+     * default: true
      */
     lazyTransformation: boolean
 };
