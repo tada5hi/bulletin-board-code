@@ -1,6 +1,6 @@
 {
     "name": "bulletin-board-code",
-    "version": "0.1.2",
+    "version": "1.0.0",
     "description": "Parse BBCode to HTML.",
     "author": {
         "name": "Peter Placzek",
