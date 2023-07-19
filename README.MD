@@ -20,6 +20,8 @@
 - [Handlers](#handlers)
   - [Set](#set)
   - [Unset](#unset)
+- [Types](#types)
+  - [ParserOptions](#parseroptions)
 - [License](#license)
 
 ## Installation
@@ -71,7 +73,7 @@ console.log(parser.toBBCode('<strong>foo</strong>'));
 A handler describes how parsed tokens should be transformed to HTML or BBCode.
 Furthermore, the handler specifies conditions, when to match with a token.
 
-## Set
+### Set
 
 To set a (new) handler use the following approach:
 
@@ -93,7 +95,7 @@ console.log(parser.toBBCode('<span lazy="true">lazy: foo</span>'));
 // [lazy]foo[/lazy]
 ```
 
-## Unset
+### Unset
 
 To unset a handler use the following approach:
 
@@ -110,6 +112,84 @@ console.log(parser.toHTML('[h1]foo[/h1]'));
 
 console.log(parser.toBBCode('<h1>foo</h1>'));
 // <h1>foo</h1>
+```
+
+## Types
+### ParserOptions
+
+The following options can be passed to the parser as constructor arguments.
+
+```typescript
+declare type ParserOptions = {
+    /**
+     * Add a set of handlers to the already predefined ones.
+     *
+     * default: {}
+     */
+    handlers: Record<string, Handler>,
+
+    /**
+     * If to add a new line before block level elements
+     *
+     * default: false
+     */
+    breakBeforeBlock: boolean,
+
+    /**
+     * If to add a new line after the start of block level elements
+     *
+     * default: false
+     */
+    breakStartBlock: boolean,
+
+    /**
+     * If to add a new line before the end of block level elements
+     *
+     * default: false
+     */
+    breakEndBlock: boolean,
+
+    /**
+     * If to add a new line after block level elements.
+     *
+     * default: true
+     */
+    breakAfterBlock: boolean,
+
+    /**
+     * If to remove empty tags.
+     *
+     * default: true
+     */
+    removeEmptyTags: boolean,
+
+    /**
+     * If to fix invalid nesting, like block level elements inside inline elements.
+     *
+     * default: true
+     */
+    fixInvalidNesting: boolean,
+
+    /**
+     * If to fix invalid children. i.e. A tag which is inside a parent that doesn’t allow that type of tag as a child.
+     *
+     * default: true
+     */
+    fixInvalidChildren: boolean,
+
+    /**
+     * The default attribute quote type.
+     *
+     * default: QuoteType.auto
+     */
+    quoteType: `${QuoteType}`,
+
+    /**
+     * Lazy transformation without handler.
+     * Otherwise, library will attempt to construct html or bbcode without handler.
+     */
+    lazyTransformation: boolean
+};
 ```
 
 ## License
