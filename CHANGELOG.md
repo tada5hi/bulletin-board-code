@@ -1,3 +1,20 @@
+# [1.0.0](https://github.com/tada5hi/bulletin-board-code/compare/v0.1.2...v1.0.0) (2023-07-19)
+
+
+### Bug Fixes
+
+* circular references ([a9c2a88](https://github.com/tada5hi/bulletin-board-code/commit/a9c2a88e6950232a159ec2972c524b10438fd992))
+
+
+### Features
+
+* refactored handler singletone approach to argument passing ([d17f406](https://github.com/tada5hi/bulletin-board-code/commit/d17f40666a079b588e76ea9ebb73f3a1ec6e3382))
+
+
+### BREAKING CHANGES
+
+* public api changed
+
 ## [0.1.2](https://github.com/tada5hi/bulletin-board-code/compare/v0.1.1...v0.1.2) (2023-03-17)
 
 
