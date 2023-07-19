@@ -8,12 +8,10 @@
 import type { Handler } from './type';
 import { QuoteType } from '../constants';
 import {
-    escapeEntities,
-    escapeUriScheme,
     normaliseColor,
     stripQuotes,
 } from './utils';
-import { getObjectPathValue } from '../utils';
+import { escapeCharacters, escapeUriScheme, getObjectPathValue } from '../utils';
 import { convertHTMLToBBCode } from '../converter';
 
 /* istanbul ignore next */
@@ -216,7 +214,7 @@ export const HandlerPreset : Record<string, Handler> = {
                 return '';
             }
 
-            return `<span style="color: ${escapeEntities(normaliseColor(context.attributes.default), true)}">${context.content}</span>`;
+            return `<span style="color: ${escapeCharacters(normaliseColor(context.attributes.default), true)}">${context.content}</span>`;
         },
     },
     // END_COMMAND
@@ -361,11 +359,11 @@ export const HandlerPreset : Record<string, Handler> = {
             }
 
             if (typeof width !== 'undefined') {
-                attribs += ` width="${escapeEntities(width, true)}"`;
+                attribs += ` width="${escapeCharacters(width, true)}"`;
             }
 
             if (typeof height !== 'undefined') {
-                attribs += ` height="${escapeEntities(height, true)}"`;
+                attribs += ` height="${escapeCharacters(height, true)}"`;
             }
 
             return `<img${attribs} src="${escapeUriScheme(context.content)}" />`;
@@ -392,7 +390,7 @@ export const HandlerPreset : Record<string, Handler> = {
             return `[url=${url}]${context.content}[/url]`;
         },
         html(context) {
-            context.attributes.default = context.attributes.default ? escapeEntities(context.attributes.default, true) : context.content;
+            context.attributes.default = context.attributes.default ? escapeCharacters(context.attributes.default, true) : context.content;
 
             return `<a href="${escapeUriScheme(context.attributes.default)}">${context.content}</a>`;
         },
@@ -403,7 +401,7 @@ export const HandlerPreset : Record<string, Handler> = {
     email: {
         quoteType: QuoteType.never,
         html(context) {
-            return `<a href="mailto:${context.attributes.default ? escapeEntities(context.attributes.default, true) : context.content}">${context.content}</a>`;
+            return `<a href="mailto:${context.attributes.default ? escapeCharacters(context.attributes.default, true) : context.content}">${context.content}</a>`;
         },
     },
     // END_COMMAND
@@ -446,7 +444,7 @@ export const HandlerPreset : Record<string, Handler> = {
         },
         html(context) {
             if (context.attributes.default) {
-                context.content = `<cite>${escapeEntities(context.attributes.default)}</cite>${context.content}`;
+                context.content = `<cite>${escapeCharacters(context.attributes.default)}</cite>${context.content}`;
             }
 
             return `<blockquote>${context.content}</blockquote>`;

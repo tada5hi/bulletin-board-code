@@ -5,8 +5,9 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { NestingTokenFixContext, Token } from '../index';
-import { TokenType } from '../index';
+import { TokenType } from '../constants';
+import type { Token } from '../module';
+import type { NestingTokenFixContext } from '../type';
 import { isChildAllowed } from './parse';
 import { lastArrayElement } from '../../utils';
 

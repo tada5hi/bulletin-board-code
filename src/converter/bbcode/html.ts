@@ -8,8 +8,7 @@
 import type { Token } from '../../token';
 import { TokenType } from '../../token';
 import type { Handler } from '../../handler';
-import { formatString } from '../../utils';
-import { escapeEntities } from '../../handler/utils';
+import { escapeCharacters, formatString } from '../../utils';
 import type { BBCodeToHTMLConvertContext } from '../type';
 
 export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
@@ -104,7 +103,7 @@ export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
                 continue;
             }
             default: {
-                html = escapeEntities(token.value, true);
+                html = escapeCharacters(token.value, true);
                 break;
             }
         }

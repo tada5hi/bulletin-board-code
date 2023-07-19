@@ -5,8 +5,10 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { ChildAllowedCheckContext, Token, TokenParseContext } from '../index';
-import { TokenType, hasToken } from '../index';
+import { TokenType } from '../constants';
+import type { Token } from '../module';
+import type { ChildAllowedCheckContext, TokenParseContext } from '../type';
+import { hasToken } from './has';
 import type { Handler } from '../../handler';
 import { lastArrayElement } from '../../utils';
 

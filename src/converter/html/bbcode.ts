@@ -8,8 +8,8 @@
 import type { Token } from '../../token';
 import { TokenType } from '../../token';
 import type { Handler } from '../../handler';
-import { escapeEntities, findHandlerForHTMLToken } from '../../handler/utils';
-import { formatString } from '../../utils';
+import { findHandlerForHTMLToken } from '../../handler/utils';
+import { escapeCharacters, formatString } from '../../utils';
 import type { HTMLToBBCodeConvertContext } from '../type';
 
 export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
@@ -91,7 +91,7 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
                 break;
             }
             default: {
-                output += escapeEntities(token.value, true);
+                output += escapeCharacters(token.value, true);
                 break;
             }
         }

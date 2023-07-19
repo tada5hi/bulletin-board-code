@@ -4,7 +4,7 @@
  * For the full copyright and license information,
  * view the LICENSE file that was distributed with this source code.
  */
-import { escapeEntities } from '../handler/utils';
+import { escapeCharacters } from './escape';
 
 export function formatString(str: string, obj: Record<string, any>) {
     return str.replace(/\{([^}]+)\}/g, (match, group) => {
@@ -23,6 +23,6 @@ export function formatString(str: string, obj: Record<string, any>) {
             return match;
         }
 
-        return escape ? escapeEntities(obj[group], true) : obj[group];
+        return escape ? escapeCharacters(obj[group], true) : obj[group];
     });
 }

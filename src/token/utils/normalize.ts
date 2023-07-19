@@ -5,8 +5,9 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { Token, TokenNewLinesNormaliseContext } from '../index';
-import { TokenType } from '../index';
+import type { Token } from '../module';
+import type { TokenNewLinesNormaliseContext } from '../type';
+import { TokenType } from '../constants';
 import type { Handler } from '../../handler';
 
 /* istanbul ignore next */
