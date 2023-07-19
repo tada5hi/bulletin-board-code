@@ -1,35 +1,33 @@
-const path = require('node:path');
-
 module.exports = {
     testEnvironment: 'node',
     transform: {
-        "^.+\\.tsx?$": [
+        '^.+\\.tsx?$': [
             '@swc/jest', {
                 module: {
-                    type: "commonjs"
+                    type: 'commonjs',
                 },
                 jsc: {
                     target: 'es2020',
                     parser: {
                         syntax: 'typescript',
                     },
-                    loose: true
+                    loose: true,
                 },
-            }
-        ]
+            },
+        ],
     },
     moduleFileExtensions: [
-        "ts",
-        "tsx",
-        "js",
-        "jsx",
-        "json",
-        "node",
+        'ts',
+        'tsx',
+        'js',
+        'jsx',
+        'json',
+        'node',
     ],
     testRegex: '(/unit/.*|(\\.|/)(test|spec))\\.(ts|js)x?$',
     testPathIgnorePatterns: [
-        "dist",
-        "unit/mock-util.ts"
+        'dist',
+        'unit/mock-util.ts',
     ],
     coverageDirectory: 'coverage',
     collectCoverageFrom: [
@@ -39,15 +37,15 @@ module.exports = {
         '!src/handler/utils/escape.ts',
         '!src/parser/utils/bbcode-cleanup.ts',
         '!src/token/utils/nesting.ts',
-        '!src/token/utils/parse.ts'
+        '!src/token/utils/parse.ts',
     ],
     coverageThreshold: {
         global: {
             branches: 65,
             functions: 80,
             lines: 80,
-            statements: 80
-        }
+            statements: 80,
+        },
     },
-    rootDir: '../'
+    rootDir: '../',
 };

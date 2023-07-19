@@ -5,7 +5,7 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import {Parser} from "../../src";
+import { Parser } from '../../src';
 
 describe('src/parser/*.ts', () => {
     it('should convert bbcode to html string', () => {
@@ -48,7 +48,7 @@ describe('src/parser/*.ts', () => {
         const parser = new Parser();
 
         parser.setHandler('lazy', {
-            html: '<span>lazy: {0}</span>'
+            html: '<span>lazy: {0}</span>',
         });
 
         expect(parser.toHTML('[lazy]foo[/lazy]')).toEqual('<span>lazy: foo</span>');
@@ -58,14 +58,12 @@ describe('src/parser/*.ts', () => {
         expect(parser.toHTML('[lazy]foo[/lazy]')).toEqual('[lazy]foo[/lazy]');
 
         parser.setHandler('lozy', {
-            html: (context) => {
-                return '<span data-test="'+context.attributes.default+'">'+context.content+'</span>'
-            }
-        })
+            html: (context) => `<span data-test="${context.attributes.default}">${context.content}</span>`,
+        });
 
         expect(parser.toHTML('[lozy=bar]foo[/lozy]')).toEqual('<span data-test="bar">foo</span>');
         expect(parser.toHTML('[lozy=bar test=123]foo[/lozy]')).toEqual('<span data-test="bar">foo</span>');
-    })
+    });
 
     it('should cleanup bbcode string', () => {
         const parser = new Parser();
@@ -107,4 +105,4 @@ describe('src/parser/*.ts', () => {
         expect(parser.toBBCode('<div style="direction: rtl">foo</div>')).toEqual('[rtl]foo[/rtl]');
         expect(parser.toBBCode('<div style="direction: ltr">foo</div>')).toEqual('[ltr]foo[/ltr]');
     });
-})
+});
