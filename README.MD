@@ -37,6 +37,10 @@ npm install bulletin-board-code --save
 
 ## Usage
 
+For an overview of all predefined BBCodes,
+take a look at the following [file](src/handler/constants.ts).
+To see them in action, the test directory can be inspected.
+
 ### BBCode To HTML
 
 ```typescript
