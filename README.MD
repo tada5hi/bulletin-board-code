@@ -117,7 +117,7 @@ console.log(parser.toBBCode('<h1>foo</h1>'));
 ## Types
 ### ParserOptions
 
-The following options can be passed to the parser as constructor arguments.
+The following options can be passed to the parser as constructor argument.
 
 ```typescript
 declare type ParserOptions = {
