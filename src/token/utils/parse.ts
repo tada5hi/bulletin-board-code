@@ -5,27 +5,26 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { Token } from '../index';
+import type { ChildAllowedCheckContext, Token, TokenParseContext } from '../index';
 import { TokenType, hasToken } from '../index';
 import type { Handler } from '../../handler';
-import { getHandler } from '../../handler';
 import { lastArrayElement } from '../../utils';
 
-export function isChildAllowed(parent: Token | undefined, child: Token, fixInvalidChildren?: boolean) {
-    const parentBBCode = parent ? getHandler(parent.name) : {} as Handler;
+export function isChildAllowed(context: ChildAllowedCheckContext) {
+    const parentBBCode = context.parent ? context.handlers.get(context.parent.name) : {} as Handler;
 
     if (
-        fixInvalidChildren &&
+        context.fixInvalidChildren &&
         parentBBCode &&
         parentBBCode.allowedChildren
     ) {
-        return parentBBCode.allowedChildren.indexOf(child.name || '#') > -1;
+        return parentBBCode.allowedChildren.indexOf(context.child.name || '#') > -1;
     }
 
     return true;
 }
 
-export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
+export function parseTokens(context: TokenParseContext) {
     let token : Token | undefined;
     let handler : Handler | undefined;
     let curTok : Token | undefined;
@@ -53,7 +52,7 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
             return false;
         }
 
-        const bbcode = getHandler(tag.name);
+        const bbcode = context.handlers.get(tag.name);
         if (!bbcode) {
             return false;
         }
@@ -62,9 +61,9 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
     };
 
     // eslint-disable-next-line no-cond-assign
-    while ((token = items.shift())) {
+    while ((token = context.items.shift())) {
         // eslint-disable-next-line prefer-destructuring
-        next = items[0];
+        next = context.items[0];
 
         /*
          * Fixes any invalid children.
@@ -79,7 +78,12 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
          *     <code>Code <b>only</b> allows text.</code>
          */
         // Ignore tags that can't be children
-        if (!isChildAllowed(currentTag(), token, fixInvalidChildren)) {
+        if (!isChildAllowed({
+            handlers: context.handlers,
+            parent: currentTag(),
+            child: token,
+            fixInvalidChildren: context.fixInvalidChildren,
+        })) {
             const curr = currentTag();
             // exclude closing tags of current tag
             if (token.type !== TokenType.CLOSE || !curr || token.name !== curr.name) {
@@ -97,7 +101,7 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
                 }
 
                 addTag(token);
-                handler = getHandler(token.name);
+                handler = context.handlers.get(token.name);
 
                 // If this tag is not self-closing and it has a closing
                 // tag then it is open and has children so add it to the
@@ -109,7 +113,7 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
                     !handler.isSelfClosing &&
                     (
                         handler.closedBy ||
-                        hasToken(items, token.name, TokenType.CLOSE)
+                        hasToken(context.items, token.name, TokenType.CLOSE)
                     )
                 ) {
                     openTags.push(token);
@@ -165,10 +169,10 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
 
                     // Place block linebreak before cloned tags
                     if (next && next.type === TokenType.NEWLINE) {
-                        handler = getHandler(token.name);
+                        handler = context.handlers.get(token.name);
                         if (handler && handler.isInline === false) {
                             addTag(next);
-                            items.shift();
+                            context.items.shift();
                         }
                     }
 
@@ -211,7 +215,7 @@ export function parseTokens(items: Token[], fixInvalidChildren: boolean) {
                     // skip if the next tag is the closing tag for
                     // the option tag, i.e. [/*]
                     if (!(next.type === TokenType.CLOSE && next.name === curr.name)) {
-                        handler = getHandler(curr.name);
+                        handler = context.handlers.get(curr.name);
 
                         if (handler && handler.breakAfter) {
                             openTags.pop();

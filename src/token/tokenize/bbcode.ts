@@ -7,7 +7,7 @@
 
 import { stripQuotes } from '../../handler/utils';
 import { TokenType } from '../constants';
-import { getHandler } from '../../handler';
+import type { Handlers } from '../../handler';
 import { Token } from '../module';
 import type { TokenAttributes } from '../type';
 
@@ -56,7 +56,7 @@ export function tokenizeAttrs(attrs: string) : Record<string, any> {
     return ret;
 }
 
-export function tokenizeTag(type: `${TokenType}`, input: string) {
+export function tokenizeTag(type: `${TokenType}`, input: string, handlerManager: Handlers) {
     let matches : string[] | null = [];
     let attrs;
     let name;
@@ -86,7 +86,7 @@ export function tokenizeTag(type: `${TokenType}`, input: string) {
 
     // Treat all tokens without a name and
     // all unknown BBCodes as content
-    if (!name || ((type === TokenType.OPEN || type === TokenType.CLOSE) && !getHandler(name))) {
+    if (!name || ((type === TokenType.OPEN || type === TokenType.CLOSE) && !handlerManager.get(name))) {
         type = TokenType.CONTENT;
         name = '#';
     }
@@ -94,7 +94,7 @@ export function tokenizeTag(type: `${TokenType}`, input: string) {
     return new Token(type, name, input, attrs);
 }
 
-export function tokenizeBBCode(input: string) : Token[] {
+export function tokenizeBBCode(input: string, handlerManager: Handlers) : Token[] {
     // The token types in reverse order of precedence
     const tokenTypes : {type: `${TokenType}`, regex: RegExp}[] = [
         { type: TokenType.CONTENT, regex: /^([^[\r\n]+|\[)/ },
@@ -123,7 +123,7 @@ export function tokenizeBBCode(input: string) : Token[] {
             }
 
             // Add the match to the tokens list
-            tokens.push(tokenizeTag(type, matches[0]));
+            tokens.push(tokenizeTag(type, matches[0], handlerManager));
 
             // Remove the match from the string
             input = input.substring(matches[0].length);
@@ -136,7 +136,7 @@ export function tokenizeBBCode(input: string) : Token[] {
         // If there is anything left in the string which doesn't match
         // any of the tokens then just assume it's content and add it.
         if (input.length) {
-            tokens.push(tokenizeTag(TokenType.CONTENT, input));
+            tokens.push(tokenizeTag(TokenType.CONTENT, input, handlerManager));
         }
 
         input = '';

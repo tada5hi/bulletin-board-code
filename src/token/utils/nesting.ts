@@ -5,19 +5,10 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { Token } from '../index';
+import type { NestingTokenFixContext, Token } from '../index';
 import { TokenType } from '../index';
-import { getHandler } from '../../handler';
 import { isChildAllowed } from './parse';
 import { lastArrayElement } from '../../utils';
-
-type NestingFixContext = {
-    children: Token[],
-    parents?: Token[],
-    insideInlineElement?: boolean,
-    rootArr?: Token[],
-    fixInvalidChildren?: boolean
-};
 
 /**
  * Fixes any invalid nesting.
@@ -31,9 +22,9 @@ type NestingFixContext = {
  *     [inline]A[/inline][blocklevel]B[/blocklevel][inline]C[/inline]
  *
  */
-export function fixNestingTokens(context: NestingFixContext) {
+export function fixNestingTokens(context: NestingTokenFixContext) {
     const isInline = (token: Token) => {
-        const handler = getHandler(token.name);
+        const handler = context.handlers.get(token.name);
 
         return !handler || handler.isInline !== false;
     };
@@ -71,7 +62,12 @@ export function fixNestingTokens(context: NestingFixContext) {
 
             // If parent inline is allowed inside this tag, clone it and
             // wrap this tags children in it.
-            if (isChildAllowed(token, parent, context.fixInvalidChildren)) {
+            if (isChildAllowed({
+                handlers: context.handlers,
+                parent: token,
+                child: parent,
+                fixInvalidChildren: context.fixInvalidChildren,
+            })) {
                 const clone = parent.clone();
                 clone.children = token.children;
                 token.children = [clone];
@@ -106,6 +102,7 @@ export function fixNestingTokens(context: NestingFixContext) {
         context.parents.push(token);
 
         fixNestingTokens({
+            handlers: context.handlers,
             children: token.children,
             parents: context.parents,
             insideInlineElement: context.insideInlineElement || isInline(token),

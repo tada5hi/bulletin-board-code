@@ -6,9 +6,9 @@
  */
 
 import type { Token } from '../../token';
+import type { Handlers } from '../module';
 import type { Condition, Handler } from '../type';
 import { hasOwnProperty, isObject } from '../../utils';
-import { useHandlers } from '../module';
 
 /**
  *
@@ -98,17 +98,16 @@ function isHandlerMatch(handler: Handler, token: Token) : boolean {
     return false;
 }
 
-export function findHandlerForHTMLToken(token?: Token) : Handler | undefined {
+export function findHandlerForHTMLToken(handlers: Handlers, token?: Token) : Handler | undefined {
     if (typeof token === 'undefined') {
         return undefined;
     }
-
-    const handlers = useHandlers();
-    const keys = Object.keys(handlers);
+    const items = handlers.get();
+    const keys = Object.keys(items);
 
     for (let i = 0; i < keys.length; i++) {
-        if (isHandlerMatch(handlers[keys[i]], token)) {
-            return handlers[keys[i]];
+        if (isHandlerMatch(items[keys[i]], token)) {
+            return items[keys[i]];
         }
     }
 

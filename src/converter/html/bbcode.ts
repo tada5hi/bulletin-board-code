@@ -10,10 +10,10 @@ import { TokenType } from '../../token';
 import type { Handler } from '../../handler';
 import { escapeEntities, findHandlerForHTMLToken } from '../../handler/utils';
 import { formatString } from '../../utils';
-import type { ConverterOptions } from '../type';
+import type { HTMLToBBCodeConvertContext } from '../type';
 
-export function convertHTMLToBBCode(tokens: Token[], options?: ConverterOptions) {
-    options = options || {};
+export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
+    context.options = context.options || {};
 
     let output = '';
 
@@ -23,8 +23,8 @@ export function convertHTMLToBBCode(tokens: Token[], options?: ConverterOptions)
             handler.isInline
     ) !== false;
 
-    while (tokens.length > 0) {
-        const token = tokens.shift();
+    while (context.tokens.length > 0) {
+        const token = context.tokens.shift();
         if (!token) {
             // eslint-disable-next-line no-continue
             continue;
@@ -34,14 +34,18 @@ export function convertHTMLToBBCode(tokens: Token[], options?: ConverterOptions)
             case TokenType.OPEN: {
                 const lastChild : Token | undefined = token.children[token.children.length - 1];
 
-                const handler = findHandlerForHTMLToken(token);
-                let content = convertHTMLToBBCode([...token.children], {
-                    ...options,
-                    isRoot: false,
+                const handler = findHandlerForHTMLToken(context.handlers, token);
+                let content = convertHTMLToBBCode({
+                    tokens: [...token.children],
+                    options: {
+                        ...context.options,
+                        isRoot: false,
+                    },
+                    handlers: context.handlers,
                 });
 
                 if (handler && handler.bbcode) {
-                    const lastChildHandler = findHandlerForHTMLToken(lastChild);
+                    const lastChildHandler = findHandlerForHTMLToken(context.handlers, lastChild);
                     if (
                         lastChildHandler &&
                         !isInline(handler) &&
@@ -58,20 +62,21 @@ export function convertHTMLToBBCode(tokens: Token[], options?: ConverterOptions)
                         output += formatString(handler.bbcode, token.attrs);
                     } else {
                         output += handler.bbcode({
+                            handlers: context.handlers,
                             token,
                             attributes: token.attrs,
                             content,
-                            options,
+                            options: context.options,
                         });
                     }
-                } else if (!options.lazy) {
+                } else if (!context.options.lazy) {
                     output += token.value + content + (token.closing ? token.closing.value : '');
                 }
                 break;
             }
             /* istanbul ignore next */
             case TokenType.NEWLINE: {
-                if (!options.isRoot) {
+                if (!context.options.isRoot) {
                     output += '\n';
                     // eslint-disable-next-line no-continue
                     continue;
@@ -79,7 +84,7 @@ export function convertHTMLToBBCode(tokens: Token[], options?: ConverterOptions)
 
                 output += '\n';
 
-                if (!tokens.length) {
+                if (!context.tokens.length) {
                     output += '\n';
                 }
 

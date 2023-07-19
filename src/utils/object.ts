@@ -5,29 +5,22 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { hasOwnProperty } from './has-own-property';
+export function getObjectPathValue(data: Record<string, any>, key: string) : any {
+    const index = key.indexOf('.');
+    const currentKey = index === -1 ?
+        key :
+        key.substring(0, index);
 
-export function getObjectPathValue<T extends Record<string, any>>(data: T, path: string) : string | undefined {
-    const parts = path.split('.');
+    if (index === -1) {
+        return data[currentKey];
+    }
 
-    const key = parts.shift();
-
-    if (!key || !hasOwnProperty(data, key)) {
+    if (!isObject(data[currentKey])) {
         return undefined;
     }
 
-    if (parts.length === 0) {
-        if (
-            typeof data[key] === 'string' ||
-            typeof data[key] === 'number'
-        ) {
-            return `${data[key]}`;
-        }
-
-        return undefined;
-    }
-
-    return getObjectPathValue(data[key], parts.join('.'));
+    const nextKey = key.substring(currentKey.length + 1);
+    return getObjectPathValue(data[currentKey], nextKey);
 }
 
 export function isObject(item: unknown) : item is Record<string, any> {

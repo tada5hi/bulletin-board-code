@@ -69,18 +69,18 @@ Furthermore, the handler specifies conditions, when to match with a token.
 
 ## Set
 
-The `setHandler` method allows adding or overwriting an existing handler.
+To set a (new) handler use the following approach:
 
 ```typescript
-import { Parser, setHandler } from 'bulletin-board-code';
+import { Parser } from 'bulletin-board-code';
 
-setHandler('lazy', {
+const parser = new Parser();
+
+parser.setHandler('lazy', {
     conditions: [{ attribute: { lazy: null } }],
     bbcode: '[lazy]{0}[/lazy]',
     html: '<span lazy="true">lazy: {0}</span>'
 });
-
-const parser = new Parser();
 
 console.log(parser.toHTML('[lazy]foo[/lazy]'));
 // <span lazy="true">lazy: foo</span>
@@ -91,15 +91,15 @@ console.log(parser.toBBCode('<span lazy="true">lazy: foo</span>'));
 
 ## Unset
 
-The `unsetHandler` method can be used to remove one or many handlers.
+To unset a handler use the following approach:
 
 ```typescript
 import { Parser, unsetHandler } from 'bulletin-board-code';
 
-unsetHandler('h1');
-unsetHandler(['h2', 'h3']);
-
 const parser = new Parser();
+
+parser.unsetHandler('h1');
+parser.unsetHandler(['h2', 'h3']);
 
 console.log(parser.toHTML('[h1]foo[/h1]'));
 // [h1]foo[/h1]

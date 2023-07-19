@@ -5,8 +5,7 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import {Parser, unsetHandler} from "../../src";
-import {setHandler} from "../../src";
+import {Parser} from "../../src";
 
 describe('src/parser/*.ts', () => {
     it('should convert bbcode to html string', () => {
@@ -48,17 +47,17 @@ describe('src/parser/*.ts', () => {
     it('should convert new bbcode to html string', () => {
         const parser = new Parser();
 
-        setHandler('lazy', {
+        parser.setHandler('lazy', {
             html: '<span>lazy: {0}</span>'
         });
 
         expect(parser.toHTML('[lazy]foo[/lazy]')).toEqual('<span>lazy: foo</span>');
 
-        unsetHandler('lazy');
+        parser.unsetHandler('lazy');
 
         expect(parser.toHTML('[lazy]foo[/lazy]')).toEqual('[lazy]foo[/lazy]');
 
-        setHandler('lozy', {
+        parser.setHandler('lozy', {
             html: (context) => {
                 return '<span data-test="'+context.attributes.default+'">'+context.content+'</span>'
             }

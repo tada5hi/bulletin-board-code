@@ -8,12 +8,11 @@
 import type { Token } from '../../token';
 import { TokenType } from '../../token';
 import type { Handler } from '../../handler';
-import { getHandler } from '../../handler';
 import { formatString } from '../../utils';
 import { escapeEntities } from '../../handler/utils';
-import type { ConverterOptions } from '../type';
+import type { BBCodeToHTMLConvertContext } from '../type';
 
-export function convertBBCodeToHTML(tokens: Token[], options: ConverterOptions = {}) {
+export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
     let bbcode : Handler | undefined;
     let content : string;
     let html : string;
@@ -25,8 +24,8 @@ export function convertBBCodeToHTML(tokens: Token[], options: ConverterOptions =
             handler.isInline
     ) !== false;
 
-    while (tokens.length > 0) {
-        const token = tokens.shift();
+    while (context.tokens.length > 0) {
+        const token = context.tokens.shift();
         if (!token) {
             // eslint-disable-next-line no-continue
             continue;
@@ -38,14 +37,18 @@ export function convertBBCodeToHTML(tokens: Token[], options: ConverterOptions =
             case TokenType.OPEN: {
                 const lastChild = token.children[token.children.length - 1] || {} as Token;
 
-                bbcode = getHandler(token.name);
-                content = convertBBCodeToHTML([...token.children], {
-                    ...options,
-                    isRoot: false,
+                bbcode = context.handlers.get(token.name);
+                content = convertBBCodeToHTML({
+                    tokens: [...token.children],
+                    options: {
+                        ...context.options,
+                        isRoot: false,
+                    },
+                    handlers: context.handlers,
                 });
 
                 if (bbcode && bbcode.html) {
-                    const lastChildHandler = getHandler(lastChild.name);
+                    const lastChildHandler = context.handlers.get(lastChild.name);
                     // Only add a line break to the end if this is
                     // blocklevel and the last child wasn't block-level
                     if (
@@ -67,20 +70,21 @@ export function convertBBCodeToHTML(tokens: Token[], options: ConverterOptions =
                         );
                     } else {
                         html = bbcode.html({
+                            handlers: context.handlers,
                             token,
                             attributes: token.attrs,
                             content,
-                            options,
+                            options: context.options,
                         });
                     }
-                } else if (!options.lazy) {
+                } else if (!context.options.lazy) {
                     html = token.value + content + (token.closing ? token.closing.value : '');
                 }
                 break;
             }
             /* istanbul ignore next */
             case TokenType.NEWLINE: {
-                if (!options.isRoot) {
+                if (!context.options.isRoot) {
                     ret += '<br />';
                     // eslint-disable-next-line no-continue
                     continue;
@@ -92,7 +96,7 @@ export function convertBBCodeToHTML(tokens: Token[], options: ConverterOptions =
                 // whatever comes after onto a new line.
                 // If this is the last token, add an extra line-break so it
                 // shows as there will be nothing after it.
-                if (!tokens.length) {
+                if (!context.tokens.length) {
                     ret += '<br />';
                 }
 

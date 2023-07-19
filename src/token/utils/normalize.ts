@@ -5,21 +5,12 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { Token } from '../index';
+import type { Token, TokenNewLinesNormaliseContext } from '../index';
 import { TokenType } from '../index';
 import type { Handler } from '../../handler';
-import { getHandler } from '../../handler';
-import type { ParserOptions } from '../../parser';
-
-type NewLinesNormaliseContext = {
-    children: Token[],
-    parent?: Token,
-    options: ParserOptions,
-    onlyRemoveBreakAfter?: boolean
-};
 
 /* istanbul ignore next */
-export function normalizeTokenNewLines(context: NewLinesNormaliseContext) {
+export function normalizeTokenNewLines(context: TokenNewLinesNormaliseContext) {
     const {
         children, parent, options, onlyRemoveBreakAfter,
     } = context;
@@ -38,7 +29,7 @@ export function normalizeTokenNewLines(context: NewLinesNormaliseContext) {
     let remove;
 
     if (parent) {
-        parentHandler = getHandler(parent.name);
+        parentHandler = context.handlers.get(parent.name);
     }
 
     let i = childrenLength;
@@ -100,7 +91,7 @@ export function normalizeTokenNewLines(context: NewLinesNormaliseContext) {
                 left &&
                 left.type === TokenType.OPEN
             ) {
-                handler = getHandler(left.name);
+                handler = context.handlers.get(left.name);
 
                 if (handler) {
                     if (!onlyRemoveBreakAfter) {
@@ -125,7 +116,7 @@ export function normalizeTokenNewLines(context: NewLinesNormaliseContext) {
                 right &&
                 right.type === TokenType.OPEN
             ) {
-                handler = getHandler(right.name);
+                handler = context.handlers.get(right.name);
                 if (handler) {
                     if (
                         handler.isInline === false &&
@@ -160,6 +151,7 @@ export function normalizeTokenNewLines(context: NewLinesNormaliseContext) {
             removedBreakBefore = false;
         } else if (token.type === TokenType.OPEN) {
             normalizeTokenNewLines({
+                handlers: context.handlers,
                 children: token.children,
                 parent: token,
                 options,

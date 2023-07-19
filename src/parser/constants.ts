@@ -10,6 +10,13 @@ import { QuoteType } from '../constants';
 
 export const ParserDefaultOptions : ParserOptions = {
     /**
+     * Add a set of handlers to the already predefined ones.
+     *
+     * @type {Object}
+     */
+    handlers: {},
+
+    /**
      * If to add a new line before block level elements
      *
      * @type {Boolean}

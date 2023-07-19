@@ -8,6 +8,7 @@
 import type { QuoteType } from '../constants';
 import type { Token, TokenAttributes } from '../token';
 import type { ConverterOptions } from '../converter';
+import type { Handlers } from './module';
 
 export type Attribute = {
     style?: {
@@ -27,6 +28,7 @@ export type ConverterContext = {
     attributes: TokenAttributes,
     content: string,
     options: ConverterOptions
+    handlers: Handlers
 };
 
 export type Handler = {

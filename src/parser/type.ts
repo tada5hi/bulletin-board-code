@@ -6,6 +6,7 @@
  */
 
 import type { QuoteType } from '../constants';
+import type { Handler, Handlers } from '../handler';
 import type { Token } from '../token';
 
 export interface ParserInterface {
@@ -18,6 +19,13 @@ export interface ParserInterface {
 }
 
 export type ParserOptions = {
+    /**
+     * Add a set of handlers to the already predefined ones.
+     *
+     * default: {}
+     */
+    handlers: Record<string, Handler>,
+
     /**
      * If to add a new line before block level elements
      *
@@ -79,4 +87,12 @@ export type ParserOptions = {
      * Otherwise, library will attempt to construct html or bbcode without handler.
      */
     lazyTransformation: boolean
+};
+
+export type ParserOptionsInput = Partial<ParserOptions>;
+
+export type BBCodeCleanupContext = {
+    tokens: Token[],
+    options: ParserOptions,
+    handlers: Handlers
 };

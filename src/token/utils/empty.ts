@@ -6,11 +6,10 @@
  */
 
 import type { Token } from '../module';
-import type { Handler } from '../../handler';
-import { getHandler } from '../../handler';
+import type { Handler, Handlers } from '../../handler';
 import { TokenType } from '../constants';
 
-export function removeEmptyTokens(tokens: Token[]) {
+export function removeEmptyTokens(tokens: Token[], handlerManager: Handlers) {
     let token : Token;
     let bbcode : Handler | undefined;
 
@@ -47,11 +46,11 @@ export function removeEmptyTokens(tokens: Token[]) {
             continue;
         }
 
-        bbcode = getHandler(token.name);
+        bbcode = handlerManager.get(token.name);
 
         // Remove any empty children of this tag first so that if they
         // are all removed this one doesn't think it's not empty.
-        removeEmptyTokens(token.children);
+        removeEmptyTokens(token.children, handlerManager);
 
         if (
             isTokenWhiteSpace(token.children) &&

@@ -5,48 +5,64 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { Handlers } from './constants';
+import { isObject } from '../utils';
+import { HandlerPreset } from './constants';
 import type { Handler } from './type';
 import { extendHandler } from './utils';
-import { hasOwnProperty } from '../utils';
 
-let instance : Record<string, Handler>;
+export class Handlers {
+    protected items : Record<string, Handler>;
 
-export function useHandlers() : Record<string, Handler> {
-    if (typeof instance !== 'undefined') {
-        return instance;
+    constructor(items?: Record<string, Handler>) {
+        this.items = {};
+
+        this.init();
+        if (items) {
+            this.set(items);
+        }
     }
 
-    instance = {};
-
-    const keys = Object.keys(Handlers);
-    for (let i = 0; i < keys.length; i++) {
-        instance[keys[i]] = extendHandler(Handlers[keys[i]]);
+    protected init() {
+        const keys = Object.keys(HandlerPreset);
+        for (let i = 0; i < keys.length; i++) {
+            this.items[keys[i]] = extendHandler(HandlerPreset[keys[i]]);
+        }
     }
 
-    return instance;
-}
+    get() : Record<string, Handler>;
 
-export function getHandler(key: string) : Handler | undefined {
-    useHandlers();
+    get(id: string) : Handler | undefined;
 
-    return instance[key];
-}
+    get(id?: string) : any {
+        if (typeof id === 'string') {
+            return this.items[id];
+        }
 
-export function setHandler(key: string, value: Handler) {
-    useHandlers();
+        return this.items;
+    }
 
-    instance[key] = value;
-}
+    set(items: Record<string, Handler>) : void;
 
-export function unsetHandler(key: string | string[]) {
-    useHandlers();
+    set(id: string, handler: Handler) : void;
 
-    const keys = Array.isArray(key) ? key : [key];
+    set(id: string | Record<string, Handler>, handler?: Handler) : void {
+        if (isObject(id)) {
+            const keys = Object.keys(id);
+            for (let i = 0; i < keys.length; i++) {
+                this.set(keys[i], id[keys[i]]);
+            }
+            return;
+        }
 
-    for (let i = 0; i < keys.length; i++) {
-        if (hasOwnProperty(instance, keys[i])) {
-            delete instance[keys[i]];
+        if (typeof handler !== 'undefined') {
+            this.items[id] = extendHandler(handler);
+        }
+    }
+
+    unset(id: string | string[]) {
+        const keys = Array.isArray(id) ? id : [id];
+        for (let i = 0; i < keys.length; i++) {
+            delete this.items[keys[i]];
         }
     }
 }
