@@ -30,10 +30,10 @@ npm install bulletin-board-code --save
 
 ## Features
 
-- bidirectional transformation (HTML & BBCode)
-- support nested BBCodes
-- automatic repair mode
-- set/unset custom handlers for transformation
+- ✨ bidirectional transformation (HTML & BBCode)
+- 📚 support nested BBCodes
+- 🛠️ automatic repair mode
+- 🧩 set/unset custom handlers for transformation
 
 ## Usage
 
