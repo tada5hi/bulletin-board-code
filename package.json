@@ -58,7 +58,7 @@
         "@types/jest": "^27.5.2",
         "@types/node": "^20.4.2",
         "cross-env": "^7.0.3",
-        "eslint": "^8.45.0",
+        "eslint": "^8.51.0",
         "husky": "^8.0.3",
         "jest": "^27.5.1",
         "rimraf": "^4.4.0",
