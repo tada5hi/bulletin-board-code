@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/tada5hi/bulletin-board-code/compare/v1.0.0...v1.0.1) (2023-12-23)
+
+
+### Bug Fixes
+
+* incorrect th detection ([#329](https://github.com/tada5hi/bulletin-board-code/issues/329)) ([bc540d7](https://github.com/tada5hi/bulletin-board-code/commit/bc540d750fb7b5f3b89d6d90e746289cd18a7174)), closes [#255](https://github.com/tada5hi/bulletin-board-code/issues/255)
+
 # [1.0.0](https://github.com/tada5hi/bulletin-board-code/compare/v0.1.2...v1.0.0) (2023-07-19)
 
 
