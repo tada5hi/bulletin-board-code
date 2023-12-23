@@ -284,7 +284,7 @@ export const HandlerPreset : Record<string, Handler> = {
     },
     th: {
         conditions: [
-            { tag: 'tr' },
+            { tag: 'th' },
         ],
         allowsEmpty: true,
         isInline: false,
