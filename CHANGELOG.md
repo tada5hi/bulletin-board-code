@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/tada5hi/bulletin-board-code/compare/v1.0.1...v1.0.2) (2024-04-16)
+
+
+### Bug Fixes
+
+* **deps:** bump node-html-parser from 6.1.11 to 6.1.13 ([#395](https://github.com/tada5hi/bulletin-board-code/issues/395)) ([f9505b7](https://github.com/tada5hi/bulletin-board-code/commit/f9505b7ae5f855b2ddcb372667f2d3182dd3b4f4))
+
 ## [1.0.1](https://github.com/tada5hi/bulletin-board-code/compare/v1.0.0...v1.0.1) (2023-12-23)
 
 
