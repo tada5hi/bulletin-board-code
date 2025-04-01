@@ -11,6 +11,8 @@ import type { Handlers } from '../../handler';
 import { Token } from '../module';
 import type { TokenAttributes } from '../type';
 
+const attrRegex = /([^\s=]+)=(?:(["'])((?:\\\2|(?!\2))*?)\2|((?:.(?!\s\S+=))*.))/g;
+
 export function tokenizeAttrs(attrs: string) : Record<string, any> {
     let matches : string[] | null = [];
     /**
@@ -20,8 +22,7 @@ export function tokenizeAttrs(attrs: string) : Record<string, any> {
      *             (?:
      *                 (["'])                    The opening quote
      *                 (
-     *                     (?:\\\2|[^\2])*?    Anything that isn't the
-     *                                         unescaped opening quote
+     *                     (?:\\\2|[^\2])*?    Anything that isn't the unescaped opening quote
      *                 )
      *                 \2                        The opening quote again which
      *                                         will close the string
@@ -34,7 +35,6 @@ export function tokenizeAttrs(attrs: string) : Record<string, any> {
      *             )
      *         )
      */
-    const attrRegex = /([^\s=]+)=(?:(?:(["'])((?:\\\2|[^\2])*?)\2)|((?:.(?!\s\S+=))*.))/g;
     const ret : TokenAttributes = {};
 
     // if only one attribute then remove the = from the start and
