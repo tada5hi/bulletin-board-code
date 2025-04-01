@@ -5,7 +5,7 @@
     "parserOptions": {
         "project": "./tsconfig.eslint.json"
     },
-    "ignorePatterns": ["**/dist/*", "**/*.d.ts"],
+    "ignorePatterns": ["**/dist/*", "**/*.d.ts", "**/jest.config.js"],
     "globals": {
         "NodeJS": true
     },
