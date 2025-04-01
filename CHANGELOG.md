@@ -1,3 +1,11 @@
+## [1.0.3](https://github.com/tada5hi/bulletin-board-code/compare/v1.0.2...v1.0.3) (2025-04-01)
+
+
+### Bug Fixes
+
+* attr regex in attr tokenization ([48823ad](https://github.com/tada5hi/bulletin-board-code/commit/48823ad2da1194494689dae631c405f66102d666))
+* **deps:** bump node-html-parser in the majorprod group ([#467](https://github.com/tada5hi/bulletin-board-code/issues/467)) ([6fa3f62](https://github.com/tada5hi/bulletin-board-code/commit/6fa3f62e8f4560da65366ba0388848cb151a2450))
+
 ## [1.0.2](https://github.com/tada5hi/bulletin-board-code/compare/v1.0.1...v1.0.2) (2024-04-16)
 
 
