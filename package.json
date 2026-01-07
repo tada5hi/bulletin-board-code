@@ -68,6 +68,6 @@
         "typescript": "^5.8.2"
     },
     "dependencies": {
-        "node-html-parser": "^7.0.1"
+        "node-html-parser": "^7.0.2"
     }
 }
