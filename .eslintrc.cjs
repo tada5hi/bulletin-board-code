@@ -1,11 +1,15 @@
-{
+module.exports = {
     "extends": [
         "@tada5hi/eslint-config-typescript"
     ],
     "parserOptions": {
         "project": "./tsconfig.eslint.json"
     },
-    "ignorePatterns": ["**/dist/*", "**/*.d.ts", "**/jest.config.js"],
+    "ignorePatterns": [
+        "**/dist/*",
+        "**/*.d.ts",
+        "**/jest.config.js"
+    ],
     "globals": {
         "NodeJS": true
     },
@@ -13,8 +17,12 @@
         "class-methods-use-this": "off",
         "no-shadow": "off",
         "no-use-before-define": "off",
-
         "@typescript-eslint/no-unused-vars": "off",
         "@typescript-eslint/no-use-before-define": "off"
+    },
+    "settings": {
+        "import/resolver": {
+            [require.resolve('eslint-import-resolver-typescript', { paths: [require.resolve('@tada5hi/eslint-config-typescript')] })]: {}
+        }
     }
-}
+};
