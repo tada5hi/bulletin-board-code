@@ -32,7 +32,7 @@
         "build:watch": "tsdown --watch",
         "test": "cross-env NODE_ENV=test vitest run --config test/vitest.config.mts",
         "test:coverage": "npm test -- --coverage",
-        "lint": "eslint src test",
+        "lint": "eslint src test AGENTS.md CLAUDE.md .agents",
         "lint:fix": "npm run lint -- --fix",
         "prepare": "npx husky install",
         "prepublishOnly": "npm run build"
