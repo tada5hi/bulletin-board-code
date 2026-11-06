@@ -1,0 +1,51 @@
+name: Release
+
+on:
+    push:
+        branches: [master]
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+    contents: write
+    pull-requests: write
+    id-token: write
+
+jobs:
+    release:
+        name: Release
+        runs-on: ubuntu-latest
+        steps:
+            - name: Release Please
+              id: release
+              uses: googleapis/release-please-action@v5
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Checkout
+              if: steps.release.outputs.releases_created == 'true'
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Node
+              if: steps.release.outputs.releases_created == 'true'
+              uses: actions/setup-node@v6
+              with:
+                  node-version: 24.11.0
+                  registry-url: https://registry.npmjs.org
+
+            - name: Install
+              if: steps.release.outputs.releases_created == 'true'
+              run: npm ci
+
+            - name: Build
+              if: steps.release.outputs.releases_created == 'true'
+              run: npm run build
+
+            - name: Publish
+              if: steps.release.outputs.releases_created == 'true'
+              uses: tada5hi/monoship@v2.2.1
+              with:
+                  token: ${{ secrets.NPM_TOKEN }}
