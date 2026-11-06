@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="bulletin-board-code-a-title bulletin-board-code-a-desc">
+<title id="bulletin-board-code-a-title">Bulletin Board Code — Reversible markup</title>
+<desc id="bulletin-board-code-a-desc">Square BBCode brackets and HTML angle brackets face each other around reversible conversion arrows.</desc>
+<style>
+:root{--accent:#9c5c9d;--second:#d88c38;--ink:#253447;--paper:#f7fafc;--line:#8394a7;--wash:#9c5c9d18}
+@media(prefers-color-scheme:dark){:root{--ink:#e4ebf3;--paper:#182332;--line:#8495aa;--wash:#9c5c9d22}}
+.a{stroke:var(--accent)}.b{stroke:var(--second)}.af{fill:var(--accent)}.bf{fill:var(--second)}.ink{fill:var(--ink)}.paper{stroke:var(--line)}.line{stroke:var(--line)}.wash{fill:var(--wash)}.white{fill:#fff}.neutral{fill:var(--paper)}
+</style>
+<path d="M73 52 H43 V136 H73 M110 52 H140 V136 H110" class="a" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round" /><text x="92" y="110" class="af" font-size="44" font-weight="700" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" >b</text><path d="M169 124 L147 148 L169 172 M207 124 L229 148 L207 172" class="b" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round" /><path d="M59 183 H121 M108 172 L121 183 L108 194 M119 218 H57 M70 207 L57 218 L70 229" class="b" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
