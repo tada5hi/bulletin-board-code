@@ -9,7 +9,7 @@ import type { Token } from '../../token';
 import { TokenType } from '../../token';
 import type { Handler } from '../../handler';
 import { escapeCharacters, formatString } from '../../utils';
-import type { BBCodeToHTMLConvertContext } from '../type';
+import type { BBCodeToHTMLConvertContext } from '../types';
 
 export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
     let bbcode : Handler | undefined;
@@ -25,8 +25,8 @@ export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
 
     while (context.tokens.length > 0) {
         const token = context.tokens.shift();
+
         if (!token) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -48,6 +48,7 @@ export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
 
                 if (bbcode && bbcode.html) {
                     const lastChildHandler = context.handlers.get(lastChild.name);
+
                     // Only add a line break to the end if this is
                     // blocklevel and the last child wasn't block-level
                     if (
@@ -79,13 +80,15 @@ export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
                 } else if (!context.options.lazy) {
                     html = token.value + content + (token.closing ? token.closing.value : '');
                 }
+
                 break;
             }
             /* istanbul ignore next */
             case TokenType.NEWLINE: {
                 if (!context.options.isRoot) {
                     ret += '<br />';
-                    // eslint-disable-next-line no-continue
+
+
                     continue;
                 }
 
@@ -100,10 +103,12 @@ export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
                 }
 
                 ret += '</div>\n';
+
                 continue;
             }
             default: {
                 html = escapeCharacters(token.value, true);
+
                 break;
             }
         }

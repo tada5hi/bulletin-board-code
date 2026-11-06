@@ -13,10 +13,11 @@ import {
     normalizeTokenNewLines,
     parseTokens,
     removeEmptyTokens,
-    tokenizeBBCode, tokenizeHTML,
+    tokenizeBBCode,
+    tokenizeHTML,
 } from '../token';
 import { isObject } from '../utils';
-import type { ParserInterface, ParserOptions } from './type';
+import type { ParserInterface, ParserOptions } from './types';
 import { cleanupBBCode } from './utils';
 import { ParserDefaultOptions } from './constants';
 import { convertBBCodeToHTML, convertHTMLToBBCode } from '../converter';

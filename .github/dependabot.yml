@@ -3,13 +3,13 @@ updates:
     # Maintain dependencies for GitHub Actions
     - package-ecosystem: "github-actions"
       directory: "/"
-      target-branch: "develop"
+      target-branch: "master"
       schedule:
           interval: "daily"
 
     # Maintain dependencies for npm
     - package-ecosystem: "npm"
-      target-branch: "develop"
+      target-branch: "master"
       directory: "/"
       schedule:
           interval: "daily"

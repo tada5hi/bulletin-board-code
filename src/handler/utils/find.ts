@@ -7,7 +7,7 @@
 
 import type { Token } from '../../token';
 import type { Handlers } from '../module';
-import type { Condition, Handler } from '../type';
+import type { Condition, Handler } from '../types';
 import { hasOwnProperty, isObject } from '../../utils';
 
 /**
@@ -36,17 +36,17 @@ function isMatch(one: unknown, two: unknown) {
     }
 
     const keys = Object.keys(one);
-    for (let i = 0; i < keys.length; i++) {
-        if (!hasOwnProperty(one, keys[i]) || !hasOwnProperty(two, keys[i])) {
+
+    for (const key of keys) {
+        if (!hasOwnProperty(one, key) || !hasOwnProperty(two, key)) {
             return false;
         }
 
-        if (!one[keys[i]]) {
-            // eslint-disable-next-line no-continue
+        if (!one[key]) {
             continue;
         }
 
-        if (!isMatch(one[keys[i]], two[keys[i]])) {
+        if (!isMatch(one[key], two[key])) {
             return false;
         }
     }
@@ -74,6 +74,7 @@ function isHTMLConditionMatch(condition: Condition, token: Token) : boolean {
         condition.attribute
     ) {
         const keys = Object.keys(condition.attribute);
+
         for (let i = 0; i < keys.length; i++) {
             if (!isMatch(condition.attribute, token.attrs)) {
                 return false;
@@ -102,12 +103,13 @@ export function findHandlerForHTMLToken(handlers: Handlers, token?: Token) : Han
     if (typeof token === 'undefined') {
         return undefined;
     }
+
     const items = handlers.get();
     const keys = Object.keys(items);
 
-    for (let i = 0; i < keys.length; i++) {
-        if (isHandlerMatch(items[keys[i]], token)) {
-            return items[keys[i]];
+    for (const key of keys) {
+        if (isHandlerMatch(items[key], token)) {
+            return items[key];
         }
     }
 

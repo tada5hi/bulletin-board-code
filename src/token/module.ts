@@ -6,7 +6,7 @@
  */
 
 import type { TokenType } from './constants';
-import type { TokenAttributes } from './type';
+import type { TokenAttributes } from './types';
 
 export class Token {
     public type : `${TokenType}`;

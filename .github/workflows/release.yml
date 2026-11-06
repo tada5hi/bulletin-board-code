@@ -1,0 +1,98 @@
+name: Release
+
+on:
+    push:
+        branches: [master]
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+    contents: write
+    pull-requests: write
+    id-token: write
+
+jobs:
+    validate:
+        name: Validate release commit
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+              with:
+                  persist-credentials: false
+
+            - name: Set up Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: '24'
+                  check-latest: true
+
+            - name: Install
+              run: npm ci
+
+            - name: Build
+              run: npm run build
+
+            - name: Lint
+              run: npm run lint
+
+            - name: Test with coverage
+              run: npm run test:coverage
+
+    release:
+        name: Release
+        needs: [validate]
+        runs-on: ubuntu-latest
+        outputs:
+            releases_created: ${{ steps.release.outputs.releases_created }}
+            tag_name: ${{ steps.release.outputs.tag_name }}
+        steps:
+            - name: Release Please
+              id: release
+              uses: googleapis/release-please-action@v5
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  target-branch: master
+
+    publish:
+        name: Publish
+        needs: [release]
+        if: needs.release.outputs.releases_created == 'true'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+                  ref: ${{ needs.release.outputs.tag_name }}
+
+            - name: Set up Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: '24'
+                  check-latest: true
+                  registry-url: https://registry.npmjs.org
+
+            - name: Install
+              run: npm ci
+
+            - name: Build
+              run: npm run build
+
+            - name: Lint
+              run: npm run lint
+
+            - name: Test with coverage
+              run: npm run test:coverage
+
+            - name: Publish
+              uses: tada5hi/monoship@v2.2.1
+              with:
+                  token: ${{ secrets.NPM_TOKEN }}
