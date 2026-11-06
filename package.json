@@ -23,7 +23,8 @@
     "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "files": [
-        "dist/"
+        "dist/",
+        ".github/assets"
     ],
     "scripts": {
         "build:types": "tsc --emitDeclarationOnly",
