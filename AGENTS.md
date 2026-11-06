@@ -16,8 +16,6 @@ npm run lint
 
 ## Detailed Guides
 
-`AGENTS.md` is the entrypoint. Read the linked guides when working in their area.
-
 - [Structure](.agents/structure.md): Source responsibilities and package outputs.
 - [Testing](.agents/testing.md): Test runner, infrastructure and coverage.
 - [Conventions](.agents/conventions.md): Shared lint rules and compatibility invariants.
