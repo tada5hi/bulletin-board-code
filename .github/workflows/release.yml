@@ -16,6 +16,9 @@ jobs:
     release:
         name: Release
         runs-on: ubuntu-latest
+        outputs:
+            releases_created: ${{ steps.release.outputs.releases_created }}
+            tag_name: ${{ steps.release.outputs.tag_name }}
         steps:
             - name: Release Please
               id: release
@@ -23,29 +26,35 @@ jobs:
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
 
+    publish:
+        name: Publish
+        needs: [release]
+        if: needs.release.outputs.releases_created == 'true'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+        steps:
             - name: Checkout
-              if: steps.release.outputs.releases_created == 'true'
               uses: actions/checkout@v6
               with:
                   fetch-depth: 0
+                  persist-credentials: false
+                  ref: ${{ needs.release.outputs.tag_name }}
 
             - name: Set up Node
-              if: steps.release.outputs.releases_created == 'true'
               uses: actions/setup-node@v6
               with:
                   node-version: 24.11.0
                   registry-url: https://registry.npmjs.org
 
             - name: Install
-              if: steps.release.outputs.releases_created == 'true'
               run: npm ci
 
             - name: Build
-              if: steps.release.outputs.releases_created == 'true'
               run: npm run build
 
             - name: Publish
-              if: steps.release.outputs.releases_created == 'true'
               uses: tada5hi/monoship@v2.2.1
               with:
                   token: ${{ secrets.NPM_TOKEN }}
