@@ -28,7 +28,7 @@
     "scripts": {
         "build:types": "tsc --emitDeclarationOnly",
         "build:js": "tsdown",
-        "build": "npm run build:js && npm run build:types",
+        "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && npm run build:js && npm run build:types",
         "build:watch": "tsdown --watch",
         "test": "cross-env NODE_ENV=test vitest run --config test/vitest.config.mts",
         "test:coverage": "npm test -- --coverage",
