@@ -1,6 +1,6 @@
 # Conventions
 
-Use the installed shared ESLint configuration through the repository's lint command. Keep interface/type naming and declaration placement compatible with public exports; preserve intentional deep import facades.
+Use the installed shared ESLint configuration through the repository's lint command. Keep interface/type naming and declaration placement compatible with public exports; qualify filesystem/deep type compatibility against the declared exports map.
 
 Preserve both conversion directions and fixtures. `node-html-parser` stays external to the bundle; changes must remain compatible with its declared API.
 

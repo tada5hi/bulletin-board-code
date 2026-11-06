@@ -16,8 +16,7 @@ permissions:
     pull-requests: write
 
 env:
-    PRIMARY_NODE_VERSION: 24.11.0
-
+    PRIMARY_NODE_VERSION: '24'
 jobs:
     install:
         name: Checkout and Install

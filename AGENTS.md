@@ -22,7 +22,7 @@ npm run lint
 
 ### Writing agent docs
 
-Update guides only when an invariant or cross-cutting rule changes. Edit the existing line and describe current behavior; keep defect stories and change history in commits or PRs. Do not add a section for a single fix.
+Keep existing commands, paths and factual descriptions current. Add guide content only for an invariant or cross-cutting rule. Edit the existing line and describe current behavior; keep defect stories and change history in commits or PRs. Do not add a section for a single fix.
 
 `npm run lint` includes the shared `agentDocs` size, import-budget and history-phrase checks.
 
