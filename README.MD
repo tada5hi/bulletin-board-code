@@ -25,6 +25,24 @@ Parser tokenizes BBCode, normalizes nesting and empty tags, then renders each su
 
 <img src=".github/assets/mechanism.svg" width="960" alt="Parser tokenizes BBCode, normalizes nesting and empty tags, then renders each supported token through its HTML handler." />
 
+**Table of Contents**
+
+- [Why Bulletin Board Code?](#why-bulletin-board-code)
+- [Installation](#installation)
+- [Features](#features)
+- [Usage](#usage)
+  - [BBCode to HTML](#bbcode-to-html)
+  - [HTML to BBCode](#html-to-bbcode)
+- [Handlers](#handlers)
+  - [Set](#set)
+  - [Unset](#unset)
+- [Options](#options)
+  - [ParserOptions](#parseroptions)
+- [API](#api)
+- [Notes](#notes)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Installation
 
 ```bash
@@ -32,6 +50,15 @@ npm install bulletin-board-code
 ```
 
 The package manifest does not declare a Node runtime minimum. ESM, CommonJS and TypeScript declarations are included. Import the documented package entrypoint rather than undeclared `dist/` paths.
+
+## Features
+
+- Convert BBCode to HTML and HTML to BBCode through the same handler registry.
+- Parse nested BBCode into a token tree.
+- Repair invalid nesting and children with configurable automatic repair options.
+- Add, replace and remove custom tag handlers.
+
+The [predefined handlers](src/handler/constants.ts) show supported tags and matching conditions; [the tests](test) demonstrate concrete conversions.
 
 ## Usage
 
@@ -41,6 +68,24 @@ import { Parser } from 'bulletin-board-code';
 const parser = new Parser();
 console.log(parser.toHTML('[b]Hello[/b]')); // <strong>Hello</strong>
 console.log(parser.toBBCode('<strong>Hello</strong>')); // [b]Hello[/b]
+```
+
+### BBCode to HTML
+
+```typescript
+import { Parser } from 'bulletin-board-code';
+
+const parser = new Parser();
+console.log(parser.toHTML('[b]foo[/b]')); // <strong>foo</strong>
+```
+
+### HTML to BBCode
+
+```typescript
+import { Parser } from 'bulletin-board-code';
+
+const parser = new Parser();
+console.log(parser.toBBCode('<strong>foo</strong>')); // [b]foo[/b]
 ```
 
 ## Handlers
@@ -62,17 +107,55 @@ console.log(parser.toHTML('[mark]Read this[/mark]')); // <mark>Read this</mark>
 
 `setHandler(name, handler)` and `setHandler(record)` add or replace handlers. `unsetHandler(name)` also accepts an array. Each registry starts with `HandlerPreset`.
 
+### Set
+
+A handler specifies both output representations and the HTML conditions used to recognize a tag. Use a template with `{0}` for content, or a function receiving the token, attributes, content, options and handler registry. Custom handlers are added to the presets; registering an existing name replaces it.
+
+This handler matches a `span` with a `lazy` attribute. A `null` attribute condition checks presence without constraining its value.
+
+```typescript
+import { Parser } from 'bulletin-board-code';
+
+const parser = new Parser();
+parser.setHandler('lazy', {
+    conditions: [{ tag: 'span', attribute: { lazy: null } }],
+    bbcode: '[lazy]{0}[/lazy]',
+    html: '<span lazy="true">{0}</span>',
+});
+console.log(parser.toHTML('[lazy]foo[/lazy]')); // <span lazy="true">foo</span>
+console.log(parser.toBBCode('<span lazy="true">foo</span>')); // [lazy]foo[/lazy]
+```
+
+### Unset
+
+`unsetHandler` is a parser method, not a standalone package export. When retaining unsupported markup is important, construct the parser with `lazyTransformation: false`; the default lazy mode omits unmatched opening-token branches.
+
+```typescript
+import { Parser } from 'bulletin-board-code';
+
+const parser = new Parser({ lazyTransformation: false });
+parser.unsetHandler('h1');
+parser.unsetHandler(['h2', 'h3']);
+console.log(parser.toHTML('[h1]foo[/h1]')); // [h1]foo[/h1]
+console.log(parser.toBBCode('<h1>foo</h1>')); // <h1>foo</h1>
+```
+
 ## Options
 
-Pass a partial `ParserOptions` to `new Parser(options)`.
+### ParserOptions
+
+Pass a partial `ParserOptions` to `new Parser(options)`. The [type declaration](src/parser/types.ts) defines the complete input contract; all options and defaults are listed below.
 
 | Option | Default | Purpose |
 |---|---|---|
 | `handlers` | `{}` | Add or replace preset handlers |
-| `breakBeforeBlock` / `breakStartBlock` / `breakEndBlock` | `false` | Control block line breaks |
+| `breakBeforeBlock` | `false` | Add a newline before block elements |
+| `breakStartBlock` | `false` | Add a newline after a block opening tag |
+| `breakEndBlock` | `false` | Add a newline before a block closing tag |
 | `breakAfterBlock` | `true` | Add a break after block elements |
 | `removeEmptyTags` | `true` | Remove empty tags unless their handler allows them |
-| `fixInvalidNesting` / `fixInvalidChildren` | `true` | Repair disallowed nesting and children |
+| `fixInvalidNesting` | `true` | Repair block elements nested inside inline elements |
+| `fixInvalidChildren` | `true` | Repair children not permitted by their parent handler |
 | `quoteType` | `QuoteType.auto` | Quote BBCode attributes when needed |
 | `lazyTransformation` | `true` | Omit unmatched opening-token branches during conversion |
 
