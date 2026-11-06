@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 /*
  * Copyright (c) 2022.
  * Author Peter Placzek (tada5hi)

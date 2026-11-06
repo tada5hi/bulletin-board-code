@@ -47,14 +47,17 @@ function parseNode(node: Node) : Token[] {
     switch (node.nodeType) {
         case NodeType.ELEMENT_NODE: {
             const element = node as HTMLElement;
+
             if (element.rawTagName) {
                 const children : Token[] = [];
+
                 for (let i = 0; i < element.childNodes.length; i++) {
                     children.push(...parseNode(element.childNodes[i]));
                 }
 
                 let closingToken : Token | undefined;
-                if (selfClosingTags.indexOf(element.tagName.toLowerCase()) === -1) {
+
+                if (!selfClosingTags.includes(element.tagName.toLowerCase())) {
                     closingToken = new Token(
                         TokenType.CLOSE,
                         element.tagName.toLowerCase(),
@@ -81,11 +84,14 @@ function parseNode(node: Node) : Token[] {
                     tokens.push(...parseNode(element.childNodes[i]));
                 }
             }
+
             break;
         }
         case NodeType.TEXT_NODE: {
             const text = node as TextNode;
+
             tokens.push(new Token(TokenType.CONTENT, '#', text.text));
+
             break;
         }
         case NodeType.COMMENT_NODE:

@@ -20,6 +20,7 @@ export function getObjectPathValue(data: Record<string, any>, key: string) : any
     }
 
     const nextKey = key.substring(currentKey.length + 1);
+
     return getObjectPathValue(data[currentKey], nextKey);
 }
 

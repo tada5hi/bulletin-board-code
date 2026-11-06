@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="240" viewBox="0 0 960 240" role="img" aria-labelledby="bulletin-board-code-title bulletin-board-code-desc">
+<title id="bulletin-board-code-title">Token conversion</title><desc id="bulletin-board-code-desc">Parser tokenizes BBCode, normalizes nesting and empty tags, then renders each supported token through its HTML handler.</desc>
+<style>:root{--panel:#f5f7fa;--ink:#172536;--line:#718294;--accent:#9c5c9d}@media(prefers-color-scheme:dark){:root{--panel:#182431;--ink:#edf3f8;--line:#a3b1bf}}text{font-family:system-ui,sans-serif;fill:var(--ink)}.card{fill:var(--panel);stroke:var(--accent);stroke-width:2}.arrow{stroke:var(--line);stroke-width:3;fill:none}</style>
+<rect x="1" y="1" width="958" height="238" rx="16" fill="var(--panel)"/>
+<text x="36" y="44" font-size="22" font-weight="700">Token conversion</text>
+<path class="arrow" d="M304 140h30m-8-7 8 7-8 7M624 140h30m-8-7 8 7-8 7"/>
+<rect class="card" x="24" y="80" width="272" height="112" rx="12"/><text x="42" y="122" font-size="19" font-weight="650">BBCode input</text><text x="42" y="157" font-size="16">parseBBCode()</text>
+<rect class="card" x="344" y="80" width="272" height="112" rx="12"/><text x="362" y="122" font-size="19" font-weight="650">Normalize token tree</text><text x="362" y="157" font-size="16">fix nesting / empty tags</text>
+<rect class="card" x="664" y="80" width="272" height="112" rx="12"/><text x="682" y="122" font-size="19" font-weight="650">toHTML()</text><text x="682" y="157" font-size="16">Handler.html renders</text>
+</svg>
