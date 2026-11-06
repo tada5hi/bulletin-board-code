@@ -34,7 +34,6 @@ export function escapeCharacters(str: string, noQuotes?: boolean) {
 const VALID_SCHEME_REGEX = /^(https?|s?ftp|mailto|spotify|skype|ssh|teamspeak|tel):|(\/\/)|data:image\/(png|bmp|gif|p?jpe?g);/i;
 
 export function escapeUriScheme(url: string) {
-    let path : string[] = [];
     // If there is a : before a / then it has a scheme
     const hasScheme = /^[^/]*:/i;
 
@@ -49,7 +48,8 @@ export function escapeUriScheme(url: string) {
     ) {
         const { location } = window;
 
-        path = location.pathname.split('/');
+        const path = location.pathname.split('/');
+
         path.pop();
 
         return `${location.protocol}//${location.host}${path.join('/')}/${url}`;

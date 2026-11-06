@@ -5,9 +5,9 @@ name: CI
 
 on:
     push:
-        branches: [develop, master, next, beta, alpha]
+        branches: [master, next, beta, alpha]
     pull_request:
-        branches: [develop, master, next, beta, alpha]
+        branches: [master, next, beta, alpha]
 
 permissions:
     packages: write
@@ -16,15 +16,14 @@ permissions:
     pull-requests: write
 
 env:
-    PRIMARY_NODE_VERSION: 22
-
+    PRIMARY_NODE_VERSION: '24'
 jobs:
     install:
         name: Checkout and Install
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v6
             - name: Install
               uses: ./.github/actions/install
               with:
@@ -36,7 +35,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   name: Checkout
-                uses: actions/checkout@v3
+                uses: actions/checkout@v6
 
             -   name: Install
                 uses: ./.github/actions/install
@@ -56,7 +55,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v6
             - name: Install
               uses: ./.github/actions/install
               with:
@@ -70,7 +69,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   name: Checkout
-                uses: actions/checkout@v3
+                uses: actions/checkout@v6
 
             -   name: Install
                 uses: ./.github/actions/install
@@ -84,27 +83,6 @@ jobs:
                 run: |
                     npm run test
 
-    release:
-        name: Release
-        needs: [lint, tests]
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v3
-
-            -   name: Install
-                uses: ./.github/actions/install
-                with:
-                    node-version: ${{ env.PRIMARY_NODE_VERSION }}
-
-            -   name: Build
-                uses: ./.github/actions/build
-
-            -   name: Release
-                env:
-                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-                run: npx semantic-release
 
     coverage:
         name: Coverage
@@ -113,7 +91,7 @@ jobs:
         if: ${{ github.ref_name == 'master' }}
         steps:
             -   name: Checkout
-                uses: actions/checkout@v3
+                uses: actions/checkout@v6
 
             -   name: Install
                 uses: ./.github/actions/install
@@ -128,7 +106,7 @@ jobs:
                     npm run test:coverage
 
             -   name: Upload report
-                uses: codecov/codecov-action@v5.4.0
+                uses: codecov/codecov-action@v5.5.2
                 with:
                     token: ${{ secrets.codecov }}
                     directory: ./coverage/

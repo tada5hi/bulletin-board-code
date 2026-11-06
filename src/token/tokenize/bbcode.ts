@@ -9,12 +9,12 @@ import { stripQuotes } from '../../handler/utils';
 import { TokenType } from '../constants';
 import type { Handlers } from '../../handler';
 import { Token } from '../module';
-import type { TokenAttributes } from '../type';
+import type { TokenAttributes } from '../types';
 
 const attrRegex = /([^\s=]+)=(?:(["'])((?:\\\2|(?!\2))*?)\2|((?:.(?!\s\S+=))*.))/g;
 
 export function tokenizeAttrs(attrs: string) : Record<string, any> {
-    let matches : string[] | null = [];
+    let matches : string[] | null;
     /**
      * ([^\s=]+)                Anything that's not a space or equals
      *         =                        Equals sign =
@@ -39,7 +39,7 @@ export function tokenizeAttrs(attrs: string) : Record<string, any> {
 
     // if only one attribute then remove the = from the start and
     // strip any quotes
-    if (attrs.charAt(0) === '=' && attrs.indexOf('=', 1) < 0) {
+    if (attrs.charAt(0) === '=' && !attrs.includes('=', 1)) {
         ret.default = stripQuotes(attrs.substring(1));
     } else {
         if (attrs.charAt(0) === '=') {
@@ -47,7 +47,7 @@ export function tokenizeAttrs(attrs: string) : Record<string, any> {
         }
 
         // No need to strip quotes here, the regex will do that.
-        // eslint-disable-next-line no-cond-assign
+
         while ((matches = attrRegex.exec(attrs))) {
             ret[matches[1].toLowerCase()] = stripQuotes(matches[3]) || matches[4];
         }
@@ -57,7 +57,7 @@ export function tokenizeAttrs(attrs: string) : Record<string, any> {
 }
 
 export function tokenizeTag(type: `${TokenType}`, input: string, handlerManager: Handlers) {
-    let matches : string[] | null = [];
+    let matches : string[] | null;
     let attrs;
     let name;
 
@@ -96,29 +96,30 @@ export function tokenizeTag(type: `${TokenType}`, input: string, handlerManager:
 
 export function tokenizeBBCode(input: string, handlerManager: Handlers) : Token[] {
     // The token types in reverse order of precedence
-    const tokenTypes : {type: `${TokenType}`, regex: RegExp}[] = [
+    const tokenTypes : { type: `${TokenType}`, regex: RegExp }[] = [
         { type: TokenType.CONTENT, regex: /^([^[\r\n]+|\[)/ },
         { type: TokenType.NEWLINE, regex: /^(\r\n|\r|\n)/ },
         { type: TokenType.OPEN, regex: /^\[[^[\]]+\]/ },
         { type: TokenType.CLOSE, regex: /^\[\/[^[\]]+\]/ },
     ];
 
-    let matches : string[] | null = [];
+    let matches : string[] | null;
     let type : `${TokenType}`;
     let i : number;
     const tokens = [];
 
-    // eslint-disable-next-line no-labels,no-restricted-syntax
+    // eslint-disable-next-line no-labels
     inputLoop:
     while (input.length) {
         i = tokenTypes.length;
+
         while (i--) {
             type = tokenTypes[i].type;
 
             // Check if the string matches any of the tokens
             matches = input.match(tokenTypes[i].regex);
+
             if (!matches || !matches[0]) {
-                // eslint-disable-next-line no-continue
                 continue;
             }
 
@@ -129,7 +130,7 @@ export function tokenizeBBCode(input: string, handlerManager: Handlers) : Token[
             input = input.substring(matches[0].length);
 
             // The token has been added so start again
-            // eslint-disable-next-line no-continue,no-labels
+            // eslint-disable-next-line no-labels
             continue inputLoop;
         }
 

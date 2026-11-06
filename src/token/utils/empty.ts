@@ -36,13 +36,13 @@ export function removeEmptyTokens(tokens: Token[], handlerManager: Handlers) {
     };
 
     let i = tokens.length;
+
     while (i--) {
         // So skip anything that isn't a tag since only tags can be
         // empty, content can't
         token = tokens[i];
 
         if (!token || token.type !== TokenType.OPEN) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 

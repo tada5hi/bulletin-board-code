@@ -6,14 +6,17 @@
  */
 
 import type { Token } from '../module';
-import type { TokenNewLinesNormaliseContext } from '../type';
+import type { TokenNewLinesNormaliseContext } from '../types';
 import { TokenType } from '../constants';
 import type { Handler } from '../../handler';
 
 /* istanbul ignore next */
 export function normalizeTokenNewLines(context: TokenNewLinesNormaliseContext) {
     const {
-        children, parent, options, onlyRemoveBreakAfter,
+        children,
+        parent,
+        options,
+        onlyRemoveBreakAfter,
     } = context;
 
     const childrenLength = children.length;
@@ -34,10 +37,9 @@ export function normalizeTokenNewLines(context: TokenNewLinesNormaliseContext) {
     }
 
     let i = childrenLength;
+
     while (i--) {
-        // eslint-disable-next-line no-cond-assign
         if (!(token = children[i])) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -118,6 +120,7 @@ export function normalizeTokenNewLines(context: TokenNewLinesNormaliseContext) {
                 right.type === TokenType.OPEN
             ) {
                 handler = context.handlers.get(right.name);
+
                 if (handler) {
                     if (
                         handler.isInline === false &&
@@ -135,7 +138,8 @@ export function normalizeTokenNewLines(context: TokenNewLinesNormaliseContext) {
 
                     if (remove) {
                         children.splice(i, 1);
-                        // eslint-disable-next-line no-continue
+
+
                         continue;
                     }
                 }

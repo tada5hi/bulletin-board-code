@@ -7,7 +7,7 @@
 
 import { isObject } from '../utils';
 import { HandlerPreset } from './constants';
-import type { Handler } from './type';
+import type { Handler } from './types';
 import { extendHandler } from './utils';
 
 export class Handlers {
@@ -17,6 +17,7 @@ export class Handlers {
         this.items = {};
 
         this.init();
+
         if (items) {
             this.set(items);
         }
@@ -24,8 +25,9 @@ export class Handlers {
 
     protected init() {
         const keys = Object.keys(HandlerPreset);
-        for (let i = 0; i < keys.length; i++) {
-            this.items[keys[i]] = extendHandler(HandlerPreset[keys[i]]);
+
+        for (const key of keys) {
+            this.items[key] = extendHandler(HandlerPreset[key]);
         }
     }
 
@@ -48,9 +50,11 @@ export class Handlers {
     set(id: string | Record<string, Handler>, handler?: Handler) : void {
         if (isObject(id)) {
             const keys = Object.keys(id);
-            for (let i = 0; i < keys.length; i++) {
-                this.set(keys[i], id[keys[i]]);
+
+            for (const key of keys) {
+                this.set(key, id[key]);
             }
+
             return;
         }
 
@@ -61,8 +65,9 @@ export class Handlers {
 
     unset(id: string | string[]) {
         const keys = Array.isArray(id) ? id : [id];
-        for (let i = 0; i < keys.length; i++) {
-            delete this.items[keys[i]];
+
+        for (const key of keys) {
+            delete this.items[key];
         }
     }
 }

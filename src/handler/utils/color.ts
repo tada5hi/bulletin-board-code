@@ -31,6 +31,7 @@ export function normaliseColor(input: string) : string {
     input = input || '#000';
 
     let match = input.match(/rgb\((\d{1,3}),\s*?(\d{1,3}),\s*?(\d{1,3})\)/i);
+
     // rgb(n,n,n);
     if (match) {
         return `#${toHex(match[1])}${toHex(match[2])}${toHex(match[3])}`;
