@@ -4,7 +4,6 @@
 [![CI](https://github.com/tada5hi/bulletin-board-code/actions/workflows/main.yml/badge.svg)](https://github.com/tada5hi/bulletin-board-code/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/Tada5hi/bulletin-board-code/branch/master/graph/badge.svg?token=4KNSG8L13V)](https://codecov.io/gh/Tada5hi/bulletin-board-code)
 [![Known Vulnerabilities](https://snyk.io/test/github/Tada5hi/bulletin-board-code/badge.svg)](https://snyk.io/test/github/Tada5hi/bulletin-board-code)
-[![semantic-release: angular](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
 
 **B**ulletin **B**oard **Code** (BBCode) is a library to transform a string from:
 - BBCode to HTML
