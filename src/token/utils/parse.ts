@@ -7,7 +7,7 @@
 
 import { TokenType } from '../constants';
 import type { Token } from '../module';
-import type { ChildAllowedCheckContext, TokenParseContext } from '../type';
+import type { ChildAllowedCheckContext, TokenParseContext } from '../types';
 import { hasToken } from './has';
 import type { Handler } from '../../handler';
 import { lastArrayElement } from '../../utils';
@@ -20,7 +20,7 @@ export function isChildAllowed(context: ChildAllowedCheckContext) {
         parentBBCode &&
         parentBBCode.allowedChildren
     ) {
-        return parentBBCode.allowedChildren.indexOf(context.child.name || '#') > -1;
+        return parentBBCode.allowedChildren.includes(context.child.name || '#');
     }
 
     return true;
@@ -41,6 +41,7 @@ export function parseTokens(context: TokenParseContext) {
     const currentTag = () => lastArrayElement(openTags);
     const addTag = (token: Token) => {
         const curr = currentTag();
+
         if (curr) {
             curr.children.push(token);
         } else {
@@ -50,21 +51,22 @@ export function parseTokens(context: TokenParseContext) {
 
     const closesCurrentTag = (name: string) => {
         const tag = currentTag();
+
         if (!tag) {
             return false;
         }
 
         const bbcode = context.handlers.get(tag.name);
+
         if (!bbcode) {
             return false;
         }
 
-        return bbcode.closedBy && bbcode.closedBy.indexOf(name) > -1;
+        return bbcode.closedBy && bbcode.closedBy.includes(name);
     };
 
-    // eslint-disable-next-line no-cond-assign
+
     while ((token = context.items.shift())) {
-        // eslint-disable-next-line prefer-destructuring
         next = context.items[0];
 
         /*
@@ -87,6 +89,7 @@ export function parseTokens(context: TokenParseContext) {
             fixInvalidChildren: context.fixInvalidChildren,
         })) {
             const curr = currentTag();
+
             // exclude closing tags of current tag
             if (token.type !== TokenType.CLOSE || !curr || token.name !== curr.name) {
                 token.name = '#';
@@ -122,10 +125,12 @@ export function parseTokens(context: TokenParseContext) {
                 } else if (!handler || !handler.isSelfClosing) {
                     token.type = TokenType.CONTENT;
                 }
+
                 break;
 
             case TokenType.CLOSE: {
                 const curr = currentTag();
+
                 // check if this closes the current tag,
                 // e.g. [/list] would close an open [*]
                 if (curr && token.name !== curr.name &&
@@ -146,12 +151,13 @@ export function parseTokens(context: TokenParseContext) {
                     // in.
                 } else if (hasToken(openTags, token.name, TokenType.OPEN)) {
                     // Remove the tag from the open tags
-                    // eslint-disable-next-line no-cond-assign
+
                     while ((curTok = openTags.pop())) {
                         // If it's the tag that is being closed then
                         // discard it and break the loop.
                         if (curTok.name === token.name) {
                             curTok.closing = token;
+
                             break;
                         }
 
@@ -161,6 +167,7 @@ export function parseTokens(context: TokenParseContext) {
 
                         if (cloned.length) {
                             const lastElement = lastArrayElement(cloned);
+
                             if (lastElement) {
                                 clone.children.push(lastElement);
                             }
@@ -172,6 +179,7 @@ export function parseTokens(context: TokenParseContext) {
                     // Place block linebreak before cloned tags
                     if (next && next.type === TokenType.NEWLINE) {
                         handler = context.handlers.get(token.name);
+
                         if (handler && handler.isInline === false) {
                             addTag(next);
                             context.items.shift();
@@ -181,12 +189,14 @@ export function parseTokens(context: TokenParseContext) {
                     // Add the last cloned child to the now current tag
                     // (the parent of the tag which was being closed)
                     const lastElement = lastArrayElement(cloned);
+
                     if (lastElement) {
                         addTag(lastElement);
                     }
 
                     // Add all the cloned tags to the open tags list
                     i = cloned.length;
+
                     while (i--) {
                         openTags.push(cloned[i]);
                     }
@@ -198,6 +208,7 @@ export function parseTokens(context: TokenParseContext) {
                     token.type = TokenType.CONTENT;
                     addTag(token);
                 }
+
                 break;
             }
             case TokenType.NEWLINE: {
@@ -219,19 +230,19 @@ export function parseTokens(context: TokenParseContext) {
                     if (!(next.type === TokenType.CLOSE && next.name === curr.name)) {
                         handler = context.handlers.get(curr.name);
 
-                        if (handler && handler.breakAfter) {
-                            openTags.pop();
-                        } else if (handler && handler.isInline === false && handler.breakAfter !== false) {
+                        if (handler && (handler.breakAfter || (handler.isInline === false && handler.breakAfter !== false))) {
                             openTags.pop();
                         }
                     }
                 }
 
                 addTag(token);
+
                 break;
             }
             default:
                 addTag(token);
+
                 break;
         }
     }

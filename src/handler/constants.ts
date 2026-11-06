@@ -5,7 +5,7 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { Handler } from './type';
+import type { Handler } from './types';
 import { QuoteType } from '../constants';
 import {
     normaliseColor,
@@ -51,13 +51,7 @@ export const HandlerPreset : Record<string, Handler> = {
         conditions: [
             { tag: 'b' },
             { tag: 'strong' },
-            {
-                attribute: {
-                    style: {
-                        fontWeight: ['bold', 'bolder', '401', '700', '800', '900'],
-                    },
-                },
-            },
+            { attribute: { style: { fontWeight: ['bold', 'bolder', '401', '700', '800', '900'] } } },
         ],
         bbcode: '[b]{0}[/b]',
         html: '<strong>{0}</strong>',
@@ -69,13 +63,7 @@ export const HandlerPreset : Record<string, Handler> = {
         conditions: [
             { tag: 'i' },
             { tag: 'em' },
-            {
-                attribute: {
-                    style: {
-                        textDecoration: ['italic', 'oblique'],
-                    },
-                },
-            },
+            { attribute: { style: { textDecoration: ['italic', 'oblique'] } } },
         ],
         bbcode: '[i]{0}[/i]',
         html: '<em>{0}</em>',
@@ -86,13 +74,7 @@ export const HandlerPreset : Record<string, Handler> = {
     u: {
         conditions: [
             { tag: 'u' },
-            {
-                attribute: {
-                    style: {
-                        textDecoration: ['underline'],
-                    },
-                },
-            },
+            { attribute: { style: { textDecoration: ['underline'] } } },
         ],
         bbcode: '[u]{0}[/u]',
         html: '<u>{0}</u>',
@@ -104,13 +86,7 @@ export const HandlerPreset : Record<string, Handler> = {
         conditions: [
             { tag: 's' },
             { tag: 'strike' },
-            {
-                attribute: {
-                    style: {
-                        textDecoration: ['line-through'],
-                    },
-                },
-            },
+            { attribute: { style: { textDecoration: ['line-through'] } } },
         ],
         bbcode: '[s]{0}[/s]',
         html: '<s>{0}</s>',
@@ -140,20 +116,16 @@ export const HandlerPreset : Record<string, Handler> = {
     // START_COMMAND: Font
     font: {
         conditions: [
-            {
-                attribute: {
-                    style: {
-                        fontFamily: null,
-                    },
-                },
-            },
+            { attribute: { style: { fontFamily: null } } },
         ],
         quoteType: QuoteType.never,
         bbcode(context) {
             const font = getObjectPathValue(context.attributes, 'style.fontFamily');
+
             if (!font) {
                 return '';
             }
+
             return `[font=${stripQuotes(font)}]${context.content}[/font]`;
         },
         html: '<span style="font-family: {default}">{0}</span>',
@@ -163,13 +135,7 @@ export const HandlerPreset : Record<string, Handler> = {
     // START_COMMAND: Size
     size: {
         conditions: [
-            {
-                attribute: {
-                    style: {
-                        fontSize: null,
-                    },
-                },
-            },
+            { attribute: { style: { fontSize: null } } },
         ],
         bbcode(context) {
             let fontSize : unknown = getObjectPathValue(context.attributes, 'size');
@@ -187,13 +153,7 @@ export const HandlerPreset : Record<string, Handler> = {
     // START_COMMAND: Color
     color: {
         conditions: [
-            {
-                attribute: {
-                    style: {
-                        color: null,
-                    },
-                },
-            },
+            { attribute: { style: { color: null } } },
         ],
         quoteType: QuoteType.never,
         bbcode(context) {
@@ -353,7 +313,7 @@ export const HandlerPreset : Record<string, Handler> = {
             if (context.attributes.default) {
                 match = context.attributes.default.split(/x/i);
 
-                // eslint-disable-next-line prefer-destructuring
+
                 width = match[0];
                 height = (match.length === 2 ? match[1] : match[0]);
             }
@@ -416,6 +376,7 @@ export const HandlerPreset : Record<string, Handler> = {
         bbcode(context) {
             const authorAttr = 'data-author';
             let author = getObjectPathValue(context.attributes, authorAttr);
+
             if (!author) {
                 let index = -1;
 
@@ -427,6 +388,7 @@ export const HandlerPreset : Record<string, Handler> = {
 
                 if (index > -1) {
                     const citeChild = context.token.children[index].children[0];
+
                     if (citeChild) {
                         author = citeChild.value.replace(/(^\s+|\s+$)/g, '');
 
@@ -576,13 +538,7 @@ export const HandlerPreset : Record<string, Handler> = {
     // START_COMMAND: Rtl
     rtl: {
         conditions: [
-            {
-                attribute: {
-                    style: {
-                        direction: ['rtl'],
-                    },
-                },
-            },
+            { attribute: { style: { direction: ['rtl'] } } },
         ],
         isInline: false,
         bbcode: '[rtl]{0}[/rtl]',
@@ -593,13 +549,7 @@ export const HandlerPreset : Record<string, Handler> = {
     // START_COMMAND: Ltr
     ltr: {
         conditions: [
-            {
-                attribute: {
-                    style: {
-                        direction: ['ltr'],
-                    },
-                },
-            },
+            { attribute: { style: { direction: ['ltr'] } } },
         ],
         isInline: false,
         bbcode: '[ltr]{0}[/ltr]',

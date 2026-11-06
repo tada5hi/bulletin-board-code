@@ -9,6 +9,8 @@ import type { QuoteType } from '../constants';
 import type { Handler, Handlers } from '../handler';
 import type { Token } from '../token';
 
+// Retain the published interface name for declaration merging.
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface ParserInterface {
     parseBBCode(input: string, preserveNewLines: boolean) : Token[],
 

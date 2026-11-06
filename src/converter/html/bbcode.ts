@@ -10,7 +10,7 @@ import { TokenType } from '../../token';
 import type { Handler } from '../../handler';
 import { findHandlerForHTMLToken } from '../../handler/utils';
 import { escapeCharacters, formatString } from '../../utils';
-import type { HTMLToBBCodeConvertContext } from '../type';
+import type { HTMLToBBCodeConvertContext } from '../types';
 
 export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
     context.options = context.options || {};
@@ -25,8 +25,8 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
 
     while (context.tokens.length > 0) {
         const token = context.tokens.shift();
+
         if (!token) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -46,6 +46,7 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
 
                 if (handler && handler.bbcode) {
                     const lastChildHandler = findHandlerForHTMLToken(context.handlers, lastChild);
+
                     if (
                         lastChildHandler &&
                         !isInline(handler) &&
@@ -72,13 +73,15 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
                 } else if (!context.options.lazy) {
                     output += token.value + content + (token.closing ? token.closing.value : '');
                 }
+
                 break;
             }
             /* istanbul ignore next */
             case TokenType.NEWLINE: {
                 if (!context.options.isRoot) {
                     output += '\n';
-                    // eslint-disable-next-line no-continue
+
+
                     continue;
                 }
 
@@ -92,6 +95,7 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
             }
             default: {
                 output += escapeCharacters(token.value, true);
+
                 break;
             }
         }

@@ -6,7 +6,7 @@
  */
 
 import { TokenType } from '../../token';
-import type { BBCodeCleanupContext } from '../type';
+import type { BBCodeCleanupContext } from '../types';
 import { QuoteType } from '../../constants';
 import type { Handler } from '../../handler';
 
@@ -40,13 +40,14 @@ export function cleanupBBCode(context: BBCodeCleanupContext) {
 
     while (context.tokens.length > 0) {
         const token = context.tokens.shift();
-        // eslint-disable-next-line no-cond-assign
+
+
         if (!token) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
         bbcode = context.handlers.get(token.name);
+
         if (bbcode) {
             isBlock = !(typeof bbcode.isHtmlInline !== 'undefined' ? bbcode.isHtmlInline : bbcode.isInline);
             isSelfClosing = !!bbcode.isSelfClosing;
@@ -56,7 +57,6 @@ export function cleanupBBCode(context: BBCodeCleanupContext) {
             breakEnd = (isBlock && context.options.breakEndBlock && bbcode.breakEnd !== false) || !!bbcode.breakEnd;
             breakAfter = (isBlock && context.options.breakAfterBlock && bbcode.breakAfter !== false) || !!bbcode.breakAfter;
         } else {
-            isBlock = false;
             isSelfClosing = false;
 
             breakBefore = false;
@@ -71,7 +71,11 @@ export function cleanupBBCode(context: BBCodeCleanupContext) {
             ret += token.value;
 
             if (token.children) {
-                ret += cleanupBBCode({ tokens: token.children, options: context.options, handlers: context.handlers });
+                ret += cleanupBBCode({
+                    tokens: token.children,
+                    options: context.options,
+                    handlers: context.handlers,
+                });
             }
 
             if (token.closing) {
@@ -84,6 +88,7 @@ export function cleanupBBCode(context: BBCodeCleanupContext) {
 
             // Convert the tag and it's attributes to BBCode
             ret += `[${token.name}`;
+
             if (token.attrs) {
                 if (token.attrs.default) {
                     ret += `=${quote(token.attrs.default, quoteType, 'default')}`;
@@ -92,12 +97,14 @@ export function cleanupBBCode(context: BBCodeCleanupContext) {
                 }
 
                 const keys = Object.keys(token.attrs);
-                for (let i = 0; i < keys.length; i++) {
-                    if (Object.prototype.hasOwnProperty.call(token.attrs, keys[i])) {
-                        ret += ` ${keys[i]}=${quote(token.attrs[keys[i]], quoteType, keys[i])}`;
+
+                for (const key of keys) {
+                    if (Object.prototype.hasOwnProperty.call(token.attrs, key)) {
+                        ret += ` ${key}=${quote(token.attrs[key], quoteType, key)}`;
                     }
                 }
             }
+
             ret += ']';
 
             if (breakStart) {
@@ -106,7 +113,11 @@ export function cleanupBBCode(context: BBCodeCleanupContext) {
 
             // Convert the tags children to BBCode
             if (token.children) {
-                ret += cleanupBBCode({ tokens: token.children, options: context.options, handlers: context.handlers });
+                ret += cleanupBBCode({
+                    tokens: token.children,
+                    options: context.options,
+                    handlers: context.handlers,
+                });
             }
 
             // add closing tag if not self-closing

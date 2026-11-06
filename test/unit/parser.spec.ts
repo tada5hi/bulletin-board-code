@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 /*
  * Copyright (c) 2022.
  * Author Peter Placzek (tada5hi)
@@ -47,9 +48,7 @@ describe('src/parser/*.ts', () => {
     it('should convert new bbcode to html string', () => {
         const parser = new Parser();
 
-        parser.setHandler('lazy', {
-            html: '<span>lazy: {0}</span>',
-        });
+        parser.setHandler('lazy', { html: '<span>lazy: {0}</span>' });
 
         expect(parser.toHTML('[lazy]foo[/lazy]')).toEqual('<span>lazy: foo</span>');
 
@@ -57,9 +56,7 @@ describe('src/parser/*.ts', () => {
 
         expect(parser.toHTML('[lazy]foo[/lazy]')).toEqual('[lazy]foo[/lazy]');
 
-        parser.setHandler('lozy', {
-            html: (context) => `<span data-test="${context.attributes.default}">${context.content}</span>`,
-        });
+        parser.setHandler('lozy', { html: (context) => `<span data-test="${context.attributes.default}">${context.content}</span>` });
 
         expect(parser.toHTML('[lozy=bar]foo[/lozy]')).toEqual('<span data-test="bar">foo</span>');
         expect(parser.toHTML('[lozy=bar test=123]foo[/lozy]')).toEqual('<span data-test="bar">foo</span>');
