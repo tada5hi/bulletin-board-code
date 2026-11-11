@@ -60,7 +60,7 @@
         "husky": "^9.1.7",
         "rimraf": "^6.1.2",
         "tsdown": "^0.23.7",
-        "typescript": "^7.0.2",
+        "typescript": "^5.9.3",
         "typescript-eslint": "^8.72.1",
         "vitest": "^5.1.0"
     },
