@@ -46,8 +46,8 @@ describe('src/converter/*.ts', () => {
 
         expect(parser.toBBCode('a &amp; b')).toEqual('a & b');
         expect(parser.toBBCode('&lt;x&gt; "q"')).toEqual('<x> "q"');
-        expect(parser.toBBCode('a\nb')).toEqual('a\nb');
-        expect(parser.toBBCode('<b>a\nb</b>')).toEqual('[b]a\nb[/b]');
+        expect(parser.toBBCode('a\nb')).toEqual('a b');
+        expect(parser.toBBCode('<b>a\nb</b>')).toEqual('[b]a b[/b]');
     });
 
     it('should convert unmatched html elements', () => {
@@ -90,11 +90,11 @@ describe('src/converter/*.ts', () => {
         expect(parser.toBBCode('<p style="color:red">a</p><p style="color:red">b</p>'))
             .toEqual('[color=red]a[/color]\n[color=red]b[/color]');
         expect(parser.toBBCode('<p style="font-weight:bold">a</p><p>b</p>')).toEqual('[b]a[/b]\nb');
-        expect(parser.toBBCode('<div style="font-weight:bold">a\n</div><p>b</p>')).toEqual('[b]a\n[/b]\nb');
+        expect(parser.toBBCode('<div style="font-weight:bold">a\n</div><p>b</p>')).toEqual('[b]a[/b]\nb');
         expect(parser.toBBCode('<p style="color:red">a</p>')).toEqual('[color=red]a[/color]');
         expect(parser.toBBCode('<span style="color:red">a</span><span>b</span>')).toEqual('[color=red]a[/color]b');
         expect(parser.toBBCode('<blockquote>a</blockquote><blockquote>b</blockquote>'))
-            .toEqual('[quote]a[/quote][quote]b[/quote]');
+            .toEqual('[quote]a[/quote]\n[quote]b[/quote]');
         expect(parser.toBBCode('<ul><li style="color:red">a</li><li>b</li></ul>'))
             .toEqual('[ul][li][color=red]a[/color][/li][li]b[/li][/ul]');
         expect(parser.toHTML('[color=red]a[/color]\n[color=red]b[/color]'))

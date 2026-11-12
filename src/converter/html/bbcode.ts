@@ -7,36 +7,9 @@
 
 import type { Token } from '../../token';
 import { isTagMatch } from '../../handler/utils';
+import { HTMLBlockTags, TokenBreakDefaultOptions } from '../../token/pipeline';
 import type { HTMLToBBCodeConvertContext } from '../types';
 import { walkTokens } from '../walk';
-
-const blockTags : string[] = [
-    'address',
-    'article',
-    'aside',
-    'div',
-    'dl',
-    'dd',
-    'dt',
-    'fieldset',
-    'figcaption',
-    'figure',
-    'footer',
-    'form',
-    'h1',
-    'h2',
-    'h3',
-    'h4',
-    'h5',
-    'h6',
-    'header',
-    'hr',
-    'main',
-    'nav',
-    'p',
-    'pre',
-    'section',
-];
 
 /**
  * Elements whose content is not document text.
@@ -59,7 +32,7 @@ const droppedTags : string[] = [
  */
 function separateBlock(token: Token, content: string, next: Token | undefined) : string {
     if (
-        blockTags.includes(token.name) &&
+        HTMLBlockTags.includes(token.name.toLowerCase()) &&
         content.length > 0 &&
         !content.endsWith('\n') &&
         next
@@ -71,6 +44,14 @@ function separateBlock(token: Token, content: string, next: Token | undefined) :
 }
 
 export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) : string {
+    const options = context.options || {};
+    const breakOptions = {
+        breakBeforeBlock: options.breakBeforeBlock ?? TokenBreakDefaultOptions.breakBeforeBlock,
+        breakStartBlock: options.breakStartBlock ?? TokenBreakDefaultOptions.breakStartBlock,
+        breakEndBlock: options.breakEndBlock ?? TokenBreakDefaultOptions.breakEndBlock,
+        breakAfterBlock: options.breakAfterBlock ?? TokenBreakDefaultOptions.breakAfterBlock,
+    };
+
     return walkTokens(context, {
         resolve: (token) => context.handlers.match(token),
         output: 'bbcode',
@@ -105,13 +86,22 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) : strin
             next,
             matches,
         }) => {
-            // An element rendered only by attribute handlers keeps
-            // the separation of its own block level.
-            if (isTagMatch(matches[0], token)) {
-                return content;
+            let output = content;
+
+            // The bbcode parser swallows one line break after such a tag.
+            if (next && context.handlers.breaks(matches[0], 'after', breakOptions)) {
+                output += '\n';
             }
 
-            return separateBlock(token, content, next);
+            // An element rendered only by attribute handlers keeps
+            // the separation of its own block level.
+            const tagMatched = matches.some((handler) => isTagMatch(handler, token));
+
+            if (tagMatched) {
+                return output;
+            }
+
+            return separateBlock(token, output, next);
         },
     });
 }

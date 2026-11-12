@@ -8,8 +8,7 @@
 import type { Handler } from '../handler';
 import { Handlers } from '../handler';
 import type { Token } from '../token';
-import { tokenizeHTML } from '../token';
-import { parseBBCodeTokens } from '../token/pipeline';
+import { parseBBCodeTokens, parseHTMLTokens } from '../token/pipeline';
 import { isObject } from '../utils';
 import type { ParserInterface, ParserOptions } from './types';
 import { cleanupBBCode } from './utils';
@@ -66,12 +65,15 @@ export class Parser implements ParserInterface {
     }
 
     /**
-     * Tokenize html input string.
+     * Tokenize html input string and collapse its source whitespace.
      *
      * @param input
      */
     parseHTML(input: string) : Token[] {
-        return tokenizeHTML(input);
+        return parseHTMLTokens({
+            input,
+            handlers: this.handlers,
+        });
     }
 
     // ----------------------------------------------------------
@@ -127,7 +129,13 @@ export class Parser implements ParserInterface {
     toBBCode(input: string) : string {
         return convertHTMLToBBCode({
             tokens: this.parseHTML(input),
-            options: { lazy: this.options.lazyTransformation },
+            options: {
+                lazy: this.options.lazyTransformation,
+                breakBeforeBlock: this.options.breakBeforeBlock,
+                breakStartBlock: this.options.breakStartBlock,
+                breakEndBlock: this.options.breakEndBlock,
+                breakAfterBlock: this.options.breakAfterBlock,
+            },
             handlers: this.handlers,
         });
     }

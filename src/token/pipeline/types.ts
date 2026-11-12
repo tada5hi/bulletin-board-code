@@ -23,3 +23,13 @@ export type TokenPipelineContext = {
     options: TokenPipelineOptions,
     preserveNewLines?: boolean
 };
+
+export type TokenBreakDefaults = Pick<
+    TokenPipelineOptions,
+    'breakBeforeBlock' | 'breakStartBlock' | 'breakEndBlock' | 'breakAfterBlock'
+>;
+
+export type HTMLTokenPipelineContext = {
+    input: string,
+    handlers: Handlers
+};

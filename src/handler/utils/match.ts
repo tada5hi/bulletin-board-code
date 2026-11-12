@@ -109,8 +109,9 @@ export function isTagMatch(handler: Handler, token: Token) : boolean {
 /**
  * Find all handlers matching an HTML token.
  *
- * At most one tag matched handler comes first (tag+attribute conditions
- * beat tag-only conditions, then registry order), followed by every handler
+ * Block level handlers come before inline ones. Within each group the
+ * tag matched handler comes first (at most one: tag+attribute conditions
+ * beat tag-only conditions, then registry order), followed by the handlers
  * matched only through attribute-only conditions, in registry order.
  *
  * @param items
@@ -140,5 +141,11 @@ export function matchHandlers(items: Record<string, Handler>, token: Token) : Ha
         }
     }
 
-    return tagged ? [tagged, ...attributed] : attributed;
+    const matches = tagged ? [tagged, ...attributed] : attributed;
+
+    // Block level handlers wrap inline ones.
+    return [
+        ...matches.filter((handler) => handler.isInline === false),
+        ...matches.filter((handler) => handler.isInline !== false),
+    ];
 }

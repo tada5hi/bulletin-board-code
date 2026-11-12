@@ -23,7 +23,15 @@ export type Condition = {
 };
 
 export type ConverterOptions = {
-    lazy?: boolean
+    lazy?: boolean,
+    /**
+     * Line-break policy of block level tags;
+     * undefined fields use the parser defaults.
+     */
+    breakBeforeBlock?: boolean,
+    breakStartBlock?: boolean,
+    breakEndBlock?: boolean,
+    breakAfterBlock?: boolean
 };
 
 export type ConverterContext = {

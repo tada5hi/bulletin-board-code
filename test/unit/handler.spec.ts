@@ -34,7 +34,6 @@ describe('src/handler/module.ts (match)', () => {
         const parser = new Parser();
 
         const inputs = [
-            '[table][tr][th]a[/th][/tr][tr][td]b[/td][/tr][/table]',
             '[quote=bar]foo[/quote]',
             '[ul][li]foo[/li][li]bar[/li][/ul]',
             '[ol][li]foo[/li][li]bar[/li][/ol]',
@@ -43,6 +42,9 @@ describe('src/handler/module.ts (match)', () => {
         for (const input of inputs) {
             expect(parser.toBBCode(parser.toHTML(input))).toEqual(input);
         }
+
+        expect(parser.toBBCode(parser.toHTML('[table][tr][th]a[/th][/tr][tr][td]b[/td][/tr][/table]')))
+            .toEqual('[table][tr][th]a[/th][/tr]\n[tr][td]b[/td][/tr][/table]');
     });
 
     it('should return matches in stated order', () => {

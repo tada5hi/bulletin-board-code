@@ -1,0 +1,186 @@
+import { describe, expect, it } from 'vitest';
+/*
+ * Copyright (c) 2026.
+ * Author Peter Placzek (tada5hi)
+ * For the full copyright and license information,
+ * view the LICENSE file that was distributed with this source code.
+ */
+
+import type { TokenAttributes } from '../../src';
+import {
+    Handlers,
+    Parser,
+    Token,
+    TokenType,
+    convertHTMLToBBCode,
+    tokenizeHTML,
+} from '../../src';
+
+function createToken(name: string, attrs: TokenAttributes = {}) {
+    return new Token(TokenType.OPEN, name, `<${name}>`, { class: [], ...attrs });
+}
+
+describe('html to bbcode: line breaks after blocks', () => {
+    it('should emit the line break the bbcode parser swallows after a block', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<blockquote>a</blockquote>b')).toEqual('[quote]a[/quote]\nb');
+        expect(parser.toBBCode('<blockquote>a</blockquote><br />b')).toEqual('[quote]a[/quote]\n\nb');
+        expect(parser.toBBCode('<blockquote>a</blockquote>')).toEqual('[quote]a[/quote]');
+        expect(parser.toBBCode('<ul><li>a</li><li>b</li></ul>')).toEqual('[ul][li]a[/li][li]b[/li][/ul]');
+        expect(parser.toBBCode('<table><tr><td>a</td><td>b</td></tr></table>'))
+            .toEqual('[table][tr][td]a[/td]\n[td]b[/td][/tr][/table]');
+    });
+
+    it('should not add a second line break for attribute-only block elements', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<div style="text-align: center">x</div>y')).toEqual('[center]x[/center]\ny');
+        expect(parser.toBBCode('<p style="text-align: center">x</p><p>y</p>')).toEqual('[center]x[/center]\ny');
+    });
+
+    it('should follow the parser break options', () => {
+        const parser = new Parser({ breakAfterBlock: false });
+
+        expect(parser.toBBCode('<blockquote>a</blockquote>b')).toEqual('[quote]a[/quote]b');
+    });
+
+    it('should use the parser defaults for undefined converter break options', () => {
+        const tokens = [
+            createToken('blockquote', {}),
+            new Token(TokenType.CONTENT, '#', 'b'),
+        ];
+
+        tokens[0].children.push(new Token(TokenType.CONTENT, '#', 'a'));
+
+        expect(convertHTMLToBBCode({
+            tokens, 
+            options: {}, 
+            handlers: new Handlers(), 
+        }))
+            .toEqual('[quote]a[/quote]\nb');
+        expect(convertHTMLToBBCode({
+            tokens, 
+            options: { breakAfterBlock: false }, 
+            handlers: new Handlers(), 
+        }))
+            .toEqual('[quote]a[/quote]b');
+    });
+
+    it('should round-trip bbcode rendered html', () => {
+        const parser = new Parser();
+
+        const corpus = [
+            '[quote]a[/quote]',
+            '[quote]a[/quote]b',
+            '[quote]a[/quote]\nb',
+            '[quote]a[/quote]\n\nb',
+            '[quote]a[/quote]\n\n\nb',
+            'x\n[quote]a[/quote]\nb',
+            '[quote=Peter]hi[/quote]\nafter',
+            '[quote][quote]in[/quote]out[/quote]',
+            '[quote][quote]in[/quote]\n\nout[/quote]\nend',
+            '[quote]a\n\n[b]b[/b]\n[/quote]\n\nend',
+            '[ul][li]a[/li][li]b[/li][/ul]\nafter',
+            '[ul]\n[li]a[/li]\n[li]b[/li]\n[/ul]',
+            '[ol][li]a[/li][/ol]\n\nb',
+            '[list][*]a\n[*]b\n[/list]',
+            '[table][tr][th]h[/th][th]h2[/th][/tr][tr][td]c[/td][td]d[/td][/tr][/table]\nb',
+            '[code]x\ny z[/code]\nb',
+            '[code]x\n  y[/code]\nb',
+            '[code]a[/code]\n\nb',
+            '[center]x[/center]\ny',
+            '[center]x[/center]\n\ny',
+            '[left]x[/left][right]y[/right]',
+            '[b]bold[/b] [i]it[/i]\nnext',
+            '[url=http://a.b]x[/url] and [color=red]y[/color]',
+            'plain\nmulti\n\nline  text',
+            '[hr]\nb',
+            '[h1]T[/h1]\ntext',
+        ];
+
+        for (const input of corpus) {
+            const html = parser.toHTML(input);
+
+            // a decoded &nbsp; is rendered as the character itself
+            const again = parser.toHTML(parser.toBBCode(html)).replace(/\u00a0/g, '&nbsp;');
+
+            expect(again, input).toEqual(html);
+        }
+    });
+});
+
+describe('html to bbcode: whitespace normalisation', () => {
+    it('should collapse source whitespace like a browser', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<p>a</p>\n<p>b</p>')).toEqual('a\nb');
+        expect(parser.toBBCode('<ul>\n<li>a</li>\n<li>b</li>\n</ul>'))
+            .toEqual(parser.toBBCode('<ul><li>a</li><li>b</li></ul>'));
+        expect(parser.toBBCode('<table>\n  <tr>\n    <td>a</td>\n    <td>b</td>\n  </tr>\n</table>'))
+            .toEqual(parser.toBBCode('<table><tr><td>a</td><td>b</td></tr></table>'));
+        expect(parser.toBBCode('<p>  a   b  </p>')).toEqual('a b');
+        expect(parser.toBBCode('a<br>\n  b')).toEqual('a\nb');
+        expect(parser.toBBCode('  a \t\r\n b  ')).toEqual('a b');
+        expect(parser.toBBCode('<blockquote>\n  a\n</blockquote>\nb')).toEqual('[quote]a[/quote]\nb');
+        expect(parser.toBBCode('a\u{A0}\u{A0}b')).toEqual('a\u{A0}\u{A0}b');
+    });
+
+    it('should keep one space between inline elements', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<strong>a</strong> <em>b</em>')).toEqual('[b]a[/b] [i]b[/i]');
+        expect(parser.toBBCode('<strong>a</strong>\n<em>b</em>')).toEqual('[b]a[/b] [i]b[/i]');
+        expect(parser.toBBCode('<strong>a </strong> <em>b</em>')).toEqual('[b]a [/b] [i]b[/i]');
+    });
+
+    it('should leave preserved elements untouched', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<pre>a\n  b</pre>')).toEqual('a\n  b');
+        expect(parser.toBBCode('<code>a\n  b</code>')).toEqual('[code]a\n  b[/code]');
+        expect(parser.toBBCode('<textarea>a\n  b</textarea>')).toEqual('a\n  b');
+    });
+
+    it('should keep the raw tokenizer and not mutate converter input', () => {
+        const parser = new Parser();
+
+        expect(tokenizeHTML('<p>a</p>\n<p>b</p>')[1].value).toEqual('\n');
+
+        const tokens = tokenizeHTML('<p> a </p>\n');
+
+        convertHTMLToBBCode({
+            tokens, 
+            options: { lazy: true }, 
+            handlers: new Handlers(), 
+        });
+
+        expect(tokens[0].children[0].value).toEqual(' a ');
+        expect(tokens[1].value).toEqual('\n');
+
+        expect(parser.parseHTML('<p> a </p>\n')).toHaveLength(1);
+    });
+});
+
+describe('html to bbcode: match order', () => {
+    it('should order block level handlers before inline ones', () => {
+        const handlers = new Handlers();
+
+        expect(handlers.match(createToken('div', { style: { textAlign: 'center', color: 'red' } })))
+            .toEqual([handlers.get('center'), handlers.get('color')]);
+        expect(handlers.match(createToken('strong', { style: { textAlign: 'center', color: 'red' } })))
+            .toEqual([handlers.get('center'), handlers.get('b'), handlers.get('color')]);
+        expect(handlers.match(createToken('blockquote', { style: { color: 'red', textAlign: 'right' } })))
+            .toEqual([handlers.get('quote'), handlers.get('right'), handlers.get('color')]);
+    });
+
+    it('should not nest a block inside an inline tag', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<div style="text-align: center; color: red">x</div>'))
+            .toEqual('[center][color=red]x[/color][/center]');
+        expect(parser.toBBCode('<ul><li style="font-weight: bold">x</li></ul>')).toEqual('[ul][li][b]x[/b][/li][/ul]');
+        expect(parser.toBBCode('<strong style="color: red">x</strong>')).toEqual('[b][color=red]x[/color][/b]');
+        expect(parser.toBBCode('<strong style="text-align: center">x</strong>y')).toEqual('[center][b]x[/b][/center]\ny');
+    });
+});

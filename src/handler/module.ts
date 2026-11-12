@@ -129,8 +129,9 @@ export class Handlers {
 
     /**
      * Find the handlers matching an HTML token.
-     * At most one tag matched handler comes first, followed by
-     * every handler matched only through attribute conditions.
+     * Block level handlers come before inline ones; within each group
+     * the tag matched handler (at most one) comes first, followed by
+     * the handlers matched only through attribute conditions.
      *
      * @param token
      */

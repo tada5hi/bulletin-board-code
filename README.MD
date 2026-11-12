@@ -126,7 +126,7 @@ console.log(parser.toHTML('[lazy]foo[/lazy]')); // <span lazy="true">foo</span>
 console.log(parser.toBBCode('<span lazy="true">foo</span>')); // [lazy]foo[/lazy]
 ```
 
-An HTML element can match several handlers. The tag match is applied outermost and every attribute-only match is nested inside it, so `<strong style="font-style: italic">x</strong>` becomes `[b][i]x[/i][/b]`. A `class` condition accepts a string or an array of class names.
+An HTML element can match several handlers. Block level handlers wrap inline ones; within each group the tag match is applied outermost and every attribute-only match is nested inside it. So `<strong style="font-style: italic">x</strong>` becomes `[b][i]x[/i][/b]` and `<div style="text-align: center; color: red">x</div>` becomes `[center][color=red]x[/color][/center]`. A `class` condition accepts a string or an array of class names.
 
 ### Unset
 
@@ -161,9 +161,9 @@ Pass a partial `ParserOptions` to `new Parser(options)`. The [type declaration](
 | `quoteType` | `QuoteType.auto` | Quote BBCode attributes when needed |
 | `lazyTransformation` | `true` | Drop unmatched tags during conversion instead of reconstructing their markup |
 
-The `break*Block` options apply to block level handlers; a handler's own `breakBefore`, `breakStart`, `breakEnd` or `breakAfter` flag takes precedence. When an option is on, parsing treats one newline at that position as formatting and drops it, and `cleanupBBCode()` writes it. With the defaults, `[quote]foo[/quote]\nbar` renders as `<blockquote>foo</blockquote>bar`.
+The `break*Block` options apply to block level handlers; a handler's own `breakBefore`, `breakStart`, `breakEnd` or `breakAfter` flag takes precedence. When an option is on, parsing treats one newline at that position as formatting and drops it, and `cleanupBBCode()` writes it. With the defaults, `[quote]foo[/quote]\nbar` renders as `<blockquote>foo</blockquote>bar`, and `toBBCode()` writes that newline back after an element whose outermost handler breaks after it and that has a following sibling.
 
-`parseBBCode()` and `parseHTML()` expose tokens; `cleanupBBCode()` normalizes BBCode without converting to HTML. `fromBBCode()` aliases `toHTML()` and `fromHTML()` aliases `toBBCode()`.
+`parseBBCode()` and `parseHTML()` expose tokens; `parseHTML()` collapses HTML source whitespace the way a browser lays it out, while `tokenizeHTML()` keeps it raw; `cleanupBBCode()` normalizes BBCode without converting to HTML. `fromBBCode()` aliases `toHTML()` and `fromHTML()` aliases `toBBCode()`.
 
 ## API
 
@@ -176,7 +176,7 @@ All names below are exported from `bulletin-board-code`. Types have no runtime v
 | `Attribute` | type | Attribute match condition (`style`, `class`, any attribute) |
 | `Condition` | type | HTML match condition of a handler |
 | `ConverterContext` | type | Argument of handler render functions, including `convert(tokens)` |
-| `ConverterOptions` | type | Converter settings (`lazy`) |
+| `ConverterOptions` | type | Converter settings (`lazy` and the four `break*Block` options; unset break options use the parser defaults) |
 | `Handler` | type | Tag definition |
 | `Handlers` | class | Handler registry: `get`, `set`, `unset`, `has`, `isInline`, `isHtmlInline`, `breaks`, `match` |
 | `convertBBCodeToHTML` | function | Render BBCode tokens as HTML; leaves the input tokens unchanged |
@@ -194,11 +194,11 @@ All names below are exported from `bulletin-board-code`. Types have no runtime v
 | `tokenizeHTML` | function | Tokenize HTML with node-html-parser |
 | `TokenAttributes` | type | Token attribute record |
 
-`Handlers.has(name)` checks registration. `isInline(handler)` and `isHtmlInline(handler)` report the BBCode and HTML block level; unknown tags are inline. `breaks(handler, position, options)` tells whether a newline belongs `before`, at the `start`, at the `end` or `after` a tag. `match(token)` returns the handlers for an HTML token, tag match first.
+`Handlers.has(name)` checks registration. `isInline(handler)` and `isHtmlInline(handler)` report the BBCode and HTML block level; unknown tags are inline. `breaks(handler, position, options)` tells whether a newline belongs `before`, at the `start`, at the `end` or `after` a tag. `match(token)` returns the handlers for an HTML token, block level handlers before inline ones and the tag match first within each group.
 
 ## Notes
 
-- **Conversion is not a lossless round trip.** Tags, nesting, whitespace and empty elements can be normalized. BBCode tags without a handler stay literal text. With `lazyTransformation` true, unmatched HTML elements are dropped while their content is kept: `<br>` becomes a newline, and block elements such as `div` or `p` separate their content from what follows with a newline, as do block elements whose handlers matched only through attribute conditions such as `style`. `script`, `style`, `noscript`, `template`, `title` and `head` elements are dropped together with their content. HTML to BBCode emits text decoded, not HTML-escaped. Set `lazyTransformation` to false to reconstruct unmatched markup.
+- **Conversion is not a lossless round trip.** Tags, nesting, whitespace and empty elements can be normalized. HTML to BBCode collapses source whitespace like a browser: whitespace runs become one space, and whitespace at the edges of block elements, next to `<br>` and at the start and end of the input is removed; text inside `pre`, `textarea` and `code` stays as written. BBCode rendered to HTML converts back to BBCode that renders the same HTML for line structure, block tags and inline tags. BBCode tags without a handler stay literal text. With `lazyTransformation` true, unmatched HTML elements are dropped while their content is kept: `<br>` becomes a newline, and block elements such as `div` or `p` separate their content from what follows with a newline, as do block elements whose handlers matched only through attribute conditions such as `style`. `script`, `style`, `noscript`, `template`, `title` and `head` elements are dropped together with their content. HTML to BBCode emits text decoded, not HTML-escaped. Set `lazyTransformation` to false to reconstruct unmatched markup.
 - **Rejected URLs render as text.** `[url]`, `[img]` and `[email]` accept URLs without a scheme and the schemes `http`, `https`, `ftp`, `sftp`, `mailto`, `tel`, `ssh`, `spotify`, `skype`, `teamspeak`, plus PNG, BMP, GIF and JPEG `data:image/` URLs; any other scheme renders the whole tag as literal, escaped text. `[size]`, `[font]` and `[color]` values that are not a single plain CSS value (empty, or containing `;`, `:`, `{`, `}`, `\`, `/`, `url(` or `expression(`) render the whole tag as literal, escaped text as well.
 - **Conversion is not an HTML security boundary.** Review the generated HTML and custom handlers under your application's sanitization policy before rendering untrusted input.
 
