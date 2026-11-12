@@ -8,20 +8,17 @@
 import type { ConverterOptions, Handlers } from '../../handler';
 import type { Token } from '../../token';
 import { isTagMatch } from '../../handler/utils';
-import { HTMLBlockTags, TokenBreakDefaultOptions } from '../../token/pipeline';
+import { HTMLBlockTags, HTMLNonRenderedTags, TokenBreakDefaultOptions } from '../../token/pipeline';
 import { walkTokens } from '../walk';
 
 /**
- * Elements whose content is not document text.
+ * Check if a token is a block level element.
+ *
+ * @param token
  */
-const droppedTags : string[] = [
-    'head',
-    'noscript',
-    'script',
-    'style',
-    'template',
-    'title',
-];
+function isBlock(token: Token) : boolean {
+    return HTMLBlockTags.includes(token.name.toLowerCase());
+}
 
 /**
  * Check if a block level element separates its output from what follows.
@@ -30,7 +27,7 @@ const droppedTags : string[] = [
  * @param content
  */
 function isSeparated(token: Token, content: string) : boolean {
-    return HTMLBlockTags.includes(token.name.toLowerCase()) &&
+    return isBlock(token) &&
         content.length > 0 &&
         !content.endsWith('\n');
 }
@@ -59,7 +56,7 @@ export function convertHTMLToBBCode(
     const isIntrinsic = (token: Token) : boolean => {
         const name = token.name.toLowerCase();
 
-        return name === 'br' || (!!options.lazy && droppedTags.includes(name));
+        return name === 'br' || (!!options.lazy && HTMLNonRenderedTags.includes(name));
     };
 
     return walkTokens({
@@ -87,7 +84,7 @@ export function convertHTMLToBBCode(
                 return token.value + content + (token.closing ? token.closing.value : '');
             }
 
-            if (droppedTags.includes(name)) {
+            if (HTMLNonRenderedTags.includes(name)) {
                 return '';
             }
 
@@ -95,6 +92,7 @@ export function convertHTMLToBBCode(
             // still separate their content from what follows.
             return {
                 content,
+                breakBefore: isBlock(token),
                 breakAfter: isSeparated(token, content),
                 transparent: true,
             };
@@ -115,6 +113,7 @@ export function convertHTMLToBBCode(
 
             return {
                 content,
+                breakBefore: !tagMatched && isBlock(token),
                 breakAfter: !tagMatched && isSeparated(token, content),
             };
         },

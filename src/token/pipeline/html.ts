@@ -9,7 +9,7 @@ import type { Handlers } from '../../handler';
 import { TokenType } from '../constants';
 import type { Token } from '../module';
 import { tokenizeHTML } from '../tokenize';
-import { HTMLPreservedTags, isHTMLLayoutBlock } from './layout';
+import { HTMLNonRenderedTags, HTMLPreservedTags, isHTMLLayoutBlock } from './layout';
 import type { HTMLTokenPipelineContext } from './types';
 
 const WHITESPACE = /[ \t\n\r\f]+/g;
@@ -21,7 +21,9 @@ const WHITESPACE = /[ \t\n\r\f]+/g;
  * @param token
  */
 function isPreserved(handlers: Handlers, token: Token) : boolean {
-    if (HTMLPreservedTags.includes(token.name.toLowerCase())) {
+    const name = token.name.toLowerCase();
+
+    if (HTMLPreservedTags.includes(name) || HTMLNonRenderedTags.includes(name)) {
         return true;
     }
 
@@ -47,6 +49,33 @@ function isBoundary(handlers: Handlers, token: Token) : boolean {
     }
 
     return token.name.toLowerCase() === 'br' || isHTMLLayoutBlock(handlers, token);
+}
+
+/**
+ * Check if a token is an element which takes no part in the layout.
+ *
+ * @param token
+ */
+function isNonRendered(token: Token) : boolean {
+    return token.type === TokenType.OPEN &&
+        HTMLNonRenderedTags.includes(token.name.toLowerCase());
+}
+
+/**
+ * Find the closest token which takes part in the layout.
+ *
+ * @param tokens
+ * @param index
+ * @param step
+ */
+function findRendered(tokens: Token[], index: number, step: 1 | -1) : Token | undefined {
+    let i = index;
+
+    while (tokens[i] && isNonRendered(tokens[i])) {
+        i += step;
+    }
+
+    return tokens[i];
 }
 
 type WhitespaceFrame = {
@@ -92,7 +121,7 @@ export function normalizeHTMLWhitespace(tokens: Token[], handlers: Handlers) : v
 
             let value = token.value.replace(WHITESPACE, ' ');
 
-            const previous = output[output.length - 1];
+            const previous = findRendered(output, output.length - 1, -1);
 
             if (
                 previous ?
@@ -103,7 +132,7 @@ export function normalizeHTMLWhitespace(tokens: Token[], handlers: Handlers) : v
                 value = value.replace(/^ /, '');
             }
 
-            const next = children[i + 1];
+            const next = findRendered(children, i + 1, 1);
 
             if (next ? isBoundary(handlers, next) : block) {
                 value = value.replace(/ $/, '');

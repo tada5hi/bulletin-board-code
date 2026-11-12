@@ -189,6 +189,32 @@ describe('html to bbcode: element rules before attribute handlers', () => {
         expect(strict.toBBCode('<script style="color:red">alert(1)</script>')).toEqual('[color=red]alert(1)[/color]');
     });
 
+    it('should not treat dropped elements as whitespace boundaries', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('one <script style="text-align: center">ignored</script> two')).toEqual('one two');
+        expect(parser.toBBCode('one <style style="text-align: center">a{}</style> two')).toEqual('one two');
+
+        const strict = new Parser({ lazyTransformation: false });
+
+        expect(strict.toBBCode('<script>a\n  b</script>')).toEqual('<script>a\n  b</script>');
+    });
+
+    it('should separate a block from the text before it', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('a<p>b</p>')).toEqual('a\nb');
+        expect(parser.toBBCode('a<div>b</div>c')).toEqual('a\nb\nc');
+        expect(parser.toBBCode('<strong>a</strong><p>b</p>')).toEqual('[b]a[/b]\nb');
+        expect(parser.toBBCode('<p>a</p>b<p>c</p>')).toEqual('a\nb\nc');
+        expect(parser.toBBCode('a<span><p>b</p></span>')).toEqual('a\nb');
+        expect(parser.toBBCode('a<p style="color:red">b</p>')).toEqual('a\n[color=red]b[/color]');
+        expect(parser.toBBCode('a<br><p>b</p>')).toEqual('a\nb');
+        expect(parser.toBBCode('<blockquote>q</blockquote><p>b</p>')).toEqual('[quote]q[/quote]\nb');
+        expect(parser.toBBCode('<p>a</p>')).toEqual('a');
+        expect(parser.toBBCode('a<p></p>b')).toEqual('ab');
+    });
+
     it('should separate a block nested in transparent elements once', () => {
         const parser = new Parser();
 

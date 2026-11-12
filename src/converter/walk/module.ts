@@ -65,6 +65,7 @@ export function walkTokens(context: WalkContext, direction: WalkDirection) : str
             index: 0,
             output: '',
             pendingBreak: false,
+            leadingBreak: false,
         }];
 
         while (stack.length > 0) {
@@ -81,6 +82,7 @@ export function walkTokens(context: WalkContext, direction: WalkDirection) : str
                             output: '',
                             owner: token,
                             pendingBreak: false,
+                            leadingBreak: false,
                         });
 
                         break;
@@ -109,6 +111,20 @@ export function walkTokens(context: WalkContext, direction: WalkDirection) : str
 
             const rendered = renderElement(frame.owner, frame.output);
             const parent = stack[stack.length - 1];
+
+            // A line break before the element is only due when output
+            // precedes it on the same line; at the start of a frame the
+            // decision is left to a transparent owner.
+            if (
+                rendered.content.length > 0 &&
+                (rendered.breakBefore || (rendered.transparent && frame.leadingBreak))
+            ) {
+                if (parent.output.length === 0) {
+                    parent.leadingBreak = true;
+                } else if (!parent.output.endsWith(direction.lineBreak)) {
+                    parent.pendingBreak = true;
+                }
+            }
 
             append(parent, rendered.content, direction.lineBreak);
 

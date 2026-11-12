@@ -29,8 +29,13 @@ export type WalkRendered = {
      */
     breakAfter?: boolean,
     /**
-     * A pending line break at the end of the element's content
-     * carries over to what follows the element.
+     * Separate the output from what precedes it with one line break,
+     * if any output precedes it on the same line.
+     */
+    breakBefore?: boolean,
+    /**
+     * Line breaks due at the start and the end of the element's content
+     * carry over to what surrounds the element.
      */
     transparent?: boolean
 };
@@ -83,5 +88,9 @@ export type WalkFrame = {
     /**
      * A line break is due before the next non-empty output.
      */
-    pendingBreak: boolean
+    pendingBreak: boolean,
+    /**
+     * The first output of the frame asked for a line break before it.
+     */
+    leadingBreak: boolean
 };
