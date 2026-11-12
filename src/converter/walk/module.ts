@@ -101,6 +101,16 @@ export function walkTokens(context: WalkContext, direction: WalkDirection) : str
             }
         }
 
+        if (direction.finishMatched) {
+            return direction.finishMatched({
+                token,
+                content,
+                next,
+                options,
+                matches,
+            });
+        }
+
         return content;
     };
 

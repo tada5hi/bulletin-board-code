@@ -10,6 +10,7 @@ import { QuoteType } from '../constants';
 import {
     normaliseColor,
     renderLiteralTag,
+    renderStyleValue,
     renderUrlAttribute,
     stripQuotes,
 } from './utils';
@@ -128,7 +129,15 @@ export const HandlerPreset : Record<string, Handler> = {
 
             return `[font=${stripQuotes(font)}]${context.content}[/font]`;
         },
-        html: '<span style="font-family: {default}">{0}</span>',
+        html(context) {
+            const font = renderStyleValue(context.attributes.default);
+
+            if (typeof font === 'undefined') {
+                return renderLiteralTag(context);
+            }
+
+            return `<span style="font-family: ${font}">${context.content}</span>`;
+        },
     },
     // END_COMMAND
 
@@ -146,7 +155,15 @@ export const HandlerPreset : Record<string, Handler> = {
 
             return `[size=${fontSize}]${context.content}[/size]`;
         },
-        html: '<span style="font-size: {default}">{!0}</span>',
+        html(context) {
+            const size = renderStyleValue(context.attributes.default);
+
+            if (typeof size === 'undefined') {
+                return renderLiteralTag(context);
+            }
+
+            return `<span style="font-size: ${size}">${context.content}</span>`;
+        },
     },
     // END_COMMAND
 
@@ -170,11 +187,15 @@ export const HandlerPreset : Record<string, Handler> = {
             return `[color=${normaliseColor(color)}]${context.content}[/color]`;
         },
         html(context) {
-            if (!context.attributes.default) {
-                return '';
+            const color = renderStyleValue(context.attributes.default ?
+                normaliseColor(context.attributes.default) :
+                undefined);
+
+            if (typeof color === 'undefined') {
+                return renderLiteralTag(context);
             }
 
-            return `<span style="color: ${escapeCharacters(normaliseColor(context.attributes.default), true)}">${context.content}</span>`;
+            return `<span style="color: ${color}">${context.content}</span>`;
         },
     },
     // END_COMMAND

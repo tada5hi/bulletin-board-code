@@ -5,6 +5,8 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
+import type { Token } from '../../token';
+import { isTagMatch } from '../../handler/utils';
 import type { HTMLToBBCodeConvertContext } from '../types';
 import { walkTokens } from '../walk';
 
@@ -36,6 +38,38 @@ const blockTags : string[] = [
     'section',
 ];
 
+/**
+ * Elements whose content is not document text.
+ */
+const droppedTags : string[] = [
+    'head',
+    'noscript',
+    'script',
+    'style',
+    'template',
+    'title',
+];
+
+/**
+ * Separate the output of a block level element from what follows.
+ *
+ * @param token
+ * @param content
+ * @param next
+ */
+function separateBlock(token: Token, content: string, next: Token | undefined) : string {
+    if (
+        blockTags.includes(token.name) &&
+        content.length > 0 &&
+        !content.endsWith('\n') &&
+        next
+    ) {
+        return `${content}\n`;
+    }
+
+    return content;
+}
+
 export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) : string {
     return walkTokens(context, {
         resolve: (token) => context.handlers.match(token),
@@ -57,18 +91,27 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) : strin
                 return token.value + content + (token.closing ? token.closing.value : '');
             }
 
-            // Unmatched elements are transparent; block level elements
-            // still separate their content from what follows.
-            if (
-                blockTags.includes(token.name) &&
-                content.length > 0 &&
-                !content.endsWith('\n') &&
-                next
-            ) {
-                return `${content}\n`;
+            if (droppedTags.includes(token.name.toLowerCase())) {
+                return '';
             }
 
-            return content;
+            // Unmatched elements are transparent; block level elements
+            // still separate their content from what follows.
+            return separateBlock(token, content, next);
+        },
+        finishMatched: ({
+            token,
+            content,
+            next,
+            matches,
+        }) => {
+            // An element rendered only by attribute handlers keeps
+            // the separation of its own block level.
+            if (isTagMatch(matches[0], token)) {
+                return content;
+            }
+
+            return separateBlock(token, content, next);
         },
     });
 }

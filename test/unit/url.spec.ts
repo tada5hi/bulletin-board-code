@@ -164,7 +164,7 @@ describe('src/handler/utils/color.ts', () => {
     it.each([
         ['[color=#abc]x[/color]', '<span style="color: #aabbcc">x</span>'],
         ['[color=#1?2]x[/color]', '<span style="color: #1?2">x</span>'],
-        ['[color=#:;@]x[/color]', '<span style="color: #:;@">x</span>'],
+        ['[color=#:;@]x[/color]', '[color=#:;@]x[/color]'],
     ])('should expand only hex shorthand colours for %j', (input, expected) => {
         expect(new Parser().toHTML(input)).toEqual(expected);
     });

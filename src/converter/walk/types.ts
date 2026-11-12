@@ -15,6 +15,13 @@ export type WalkUnmatchedContext = {
     options: ConverterOptions
 };
 
+export type WalkMatchedContext = WalkUnmatchedContext & {
+    /**
+     * The applied handlers; the first one is the outermost.
+     */
+    matches: Handler[]
+};
+
 export type WalkDirection = {
     /**
      * Resolve the handlers for a token; the first one is the outermost.
@@ -39,7 +46,11 @@ export type WalkDirection = {
     /**
      * Render an element without any matching handler.
      */
-    renderUnmatched: (context: WalkUnmatchedContext) => string
+    renderUnmatched: (context: WalkUnmatchedContext) => string,
+    /**
+     * Post-process the output of an element rendered by handlers.
+     */
+    finishMatched?: (context: WalkMatchedContext) => string
 };
 
 export type WalkContext = {

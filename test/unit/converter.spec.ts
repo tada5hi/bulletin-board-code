@@ -67,6 +67,40 @@ describe('src/converter/*.ts', () => {
         expect(strict.toBBCode('foo<br>bar')).toEqual('foo\nbar');
     });
 
+    it('should drop script-like html elements with their content', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<script>alert(1)</script>')).toEqual('');
+        expect(parser.toBBCode('<style>a{}</style>x')).toEqual('x');
+        expect(parser.toBBCode('<noscript><b>x</b></noscript>')).toEqual('');
+        expect(parser.toBBCode('<template><b>x</b></template>y')).toEqual('y');
+        expect(parser.toBBCode('<title>t</title>y')).toEqual('y');
+        expect(parser.toBBCode('<head><title>t</title></head>y')).toEqual('y');
+        expect(parser.toBBCode('a<SCRIPT>alert(1)</SCRIPT>b')).toEqual('ab');
+        expect(parser.toBBCode('<pre>x</pre>')).toEqual('x');
+
+        const strict = new Parser({ lazyTransformation: false });
+
+        expect(strict.toBBCode('<script>alert(1)</script>')).toEqual('<script>alert(1)</script>');
+    });
+
+    it('should separate block elements rendered by attribute handlers', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<p style="color:red">a</p><p style="color:red">b</p>'))
+            .toEqual('[color=red]a[/color]\n[color=red]b[/color]');
+        expect(parser.toBBCode('<p style="font-weight:bold">a</p><p>b</p>')).toEqual('[b]a[/b]\nb');
+        expect(parser.toBBCode('<div style="font-weight:bold">a\n</div><p>b</p>')).toEqual('[b]a\n[/b]\nb');
+        expect(parser.toBBCode('<p style="color:red">a</p>')).toEqual('[color=red]a[/color]');
+        expect(parser.toBBCode('<span style="color:red">a</span><span>b</span>')).toEqual('[color=red]a[/color]b');
+        expect(parser.toBBCode('<blockquote>a</blockquote><blockquote>b</blockquote>'))
+            .toEqual('[quote]a[/quote][quote]b[/quote]');
+        expect(parser.toBBCode('<ul><li style="color:red">a</li><li>b</li></ul>'))
+            .toEqual('[ul][li][color=red]a[/color][/li][li]b[/li][/ul]');
+        expect(parser.toHTML('[color=red]a[/color]\n[color=red]b[/color]'))
+            .toEqual('<span style="color: red">a</span><br /><span style="color: red">b</span>');
+    });
+
     it('should append a line break to block elements ending inline', () => {
         const parser = new Parser();
         const handlers = new Handlers();

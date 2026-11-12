@@ -130,7 +130,7 @@ An HTML element can match several handlers. The tag match is applied outermost a
 
 ### Unset
 
-`unsetHandler` is a parser method, not a standalone package export. When retaining unsupported markup is important, construct the parser with `lazyTransformation: false`. BBCode tags without a registered handler stay literal text. In the default lazy mode, HTML to BBCode keeps the content of unmatched elements and drops only the element itself.
+`unsetHandler` is a parser method, not a standalone package export. When retaining unsupported markup is important, construct the parser with `lazyTransformation: false`. BBCode tags without a registered handler stay literal text. In the default lazy mode, HTML to BBCode keeps the content of unmatched elements and drops only the element itself; script-like elements such as `script` and `style` are dropped with their content.
 
 ```typescript
 import { Parser } from 'bulletin-board-code';
@@ -198,8 +198,8 @@ All names below are exported from `bulletin-board-code`. Types have no runtime v
 
 ## Notes
 
-- **Conversion is not a lossless round trip.** Tags, nesting, whitespace and empty elements can be normalized. BBCode tags without a handler stay literal text. With `lazyTransformation` true, unmatched HTML elements are dropped while their content is kept: `<br>` becomes a newline, and block elements such as `div` or `p` separate their content from what follows with a newline. HTML to BBCode emits text decoded, not HTML-escaped. Set `lazyTransformation` to false to reconstruct unmatched markup.
-- **Rejected URLs render as text.** `[url]`, `[img]` and `[email]` accept URLs without a scheme and the schemes `http`, `https`, `ftp`, `sftp`, `mailto`, `tel`, `ssh`, `spotify`, `skype`, `teamspeak`, plus PNG, BMP, GIF and JPEG `data:image/` URLs; any other scheme renders the whole tag as literal, escaped text.
+- **Conversion is not a lossless round trip.** Tags, nesting, whitespace and empty elements can be normalized. BBCode tags without a handler stay literal text. With `lazyTransformation` true, unmatched HTML elements are dropped while their content is kept: `<br>` becomes a newline, and block elements such as `div` or `p` separate their content from what follows with a newline, as do block elements whose handlers matched only through attribute conditions such as `style`. `script`, `style`, `noscript`, `template`, `title` and `head` elements are dropped together with their content. HTML to BBCode emits text decoded, not HTML-escaped. Set `lazyTransformation` to false to reconstruct unmatched markup.
+- **Rejected URLs render as text.** `[url]`, `[img]` and `[email]` accept URLs without a scheme and the schemes `http`, `https`, `ftp`, `sftp`, `mailto`, `tel`, `ssh`, `spotify`, `skype`, `teamspeak`, plus PNG, BMP, GIF and JPEG `data:image/` URLs; any other scheme renders the whole tag as literal, escaped text. `[size]`, `[font]` and `[color]` values that are not a single plain CSS value (empty, or containing `;`, `:`, `{`, `}`, `\`, `/`, `url(` or `expression(`) render the whole tag as literal, escaped text as well.
 - **Conversion is not an HTML security boundary.** Review the generated HTML and custom handlers under your application's sanitization policy before rendering untrusted input.
 
 ## Contributing

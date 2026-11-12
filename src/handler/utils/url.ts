@@ -5,7 +5,6 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { ConverterContext } from '../types';
 import { applyUrlPolicy, escapeCharacters } from '../../utils';
 
 /**
@@ -27,17 +26,4 @@ export function renderUrlAttribute(url: string, isContent: boolean) : string | u
     return isContent ?
         allowed.replace(/"/g, '&#34;') :
         escapeCharacters(allowed, true);
-}
-
-/**
- * Render a tag as visible text: escaped opening tag, converted content and escaped closing tag.
- *
- * @param context
- */
-export function renderLiteralTag(context: ConverterContext) : string {
-    const closing = context.token.closing ?
-        escapeCharacters(context.token.closing.value, true) :
-        '';
-
-    return escapeCharacters(context.token.value, true) + context.content + closing;
 }

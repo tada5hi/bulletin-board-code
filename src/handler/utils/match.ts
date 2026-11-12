@@ -95,6 +95,18 @@ function matchCondition(condition: Condition, token: Token) : MatchKind {
 }
 
 /**
+ * Check if a handler matches an HTML token through a condition on its tag name.
+ *
+ * @param handler
+ * @param token
+ */
+export function isTagMatch(handler: Handler, token: Token) : boolean {
+    const conditions = handler.conditions || [];
+
+    return conditions.some((condition) => matchCondition(condition, token) >= MatchKind.TAG);
+}
+
+/**
  * Find all handlers matching an HTML token.
  *
  * At most one tag matched handler comes first (tag+attribute conditions
