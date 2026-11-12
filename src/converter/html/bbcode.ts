@@ -7,7 +7,6 @@
 
 import type { Token } from '../../token';
 import { TokenType } from '../../token';
-import type { Handler } from '../../handler';
 import { findHandlerForHTMLToken } from '../../handler/utils';
 import { escapeCharacters, formatString } from '../../utils';
 import type { HTMLToBBCodeConvertContext } from '../types';
@@ -16,12 +15,6 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
     context.options = context.options || {};
 
     let output = '';
-
-    const isInline = (handler: Handler) : boolean => typeof handler === 'undefined' || (
-        typeof handler.isHtmlInline !== 'undefined' ?
-            handler.isHtmlInline :
-            handler.isInline
-    ) !== false;
 
     while (context.tokens.length > 0) {
         const token = context.tokens.shift();
@@ -49,8 +42,8 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
 
                     if (
                         lastChildHandler &&
-                        !isInline(handler) &&
-                        isInline(lastChildHandler) &&
+                        !context.handlers.isHtmlInline(handler) &&
+                        context.handlers.isHtmlInline(lastChildHandler) &&
                         !handler.skipLastLineBreak
                     ) {
                         // Add placeholder br to end of block level

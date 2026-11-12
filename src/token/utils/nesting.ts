@@ -24,11 +24,7 @@ import { lastArrayElement } from '../../utils';
  *
  */
 export function fixNestingTokens(context: NestingTokenFixContext) {
-    const isInline = (token: Token) => {
-        const handler = context.handlers.get(token.name);
-
-        return !handler || handler.isInline !== false;
-    };
+    const isInline = (token: Token) => context.handlers.isInline(token.name);
 
     context.parents = context.parents || [];
     context.rootArr = context.rootArr || context.children;

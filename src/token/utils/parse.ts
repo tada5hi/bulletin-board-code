@@ -12,6 +12,14 @@ import { hasToken } from './has';
 import type { Handler } from '../../handler';
 import { lastArrayElement } from '../../utils';
 
+// A block level tag breaks unless its handler opts out.
+const BREAK_ALL_BLOCKS = {
+    breakBeforeBlock: true,
+    breakStartBlock: true,
+    breakEndBlock: true,
+    breakAfterBlock: true,
+};
+
 export function isChildAllowed(context: ChildAllowedCheckContext) {
     const parentBBCode = context.parent ? context.handlers.get(context.parent.name) : {} as Handler;
 
@@ -178,9 +186,7 @@ export function parseTokens(context: TokenParseContext) {
 
                     // Place block linebreak before cloned tags
                     if (next && next.type === TokenType.NEWLINE) {
-                        handler = context.handlers.get(token.name);
-
-                        if (handler && handler.isInline === false) {
+                        if (!context.handlers.isInline(token.name)) {
                             addTag(next);
                             context.items.shift();
                         }
@@ -228,9 +234,7 @@ export function parseTokens(context: TokenParseContext) {
                     // skip if the next tag is the closing tag for
                     // the option tag, i.e. [/*]
                     if (!(next.type === TokenType.CLOSE && next.name === curr.name)) {
-                        handler = context.handlers.get(curr.name);
-
-                        if (handler && (handler.breakAfter || (handler.isInline === false && handler.breakAfter !== false))) {
+                        if (context.handlers.breaks(curr.name, 'after', BREAK_ALL_BLOCKS)) {
                             openTags.pop();
                         }
                     }

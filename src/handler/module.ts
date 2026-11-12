@@ -5,8 +5,9 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
-import { isObject } from '../utils';
+import { hasOwnProperty, isObject } from '../utils';
 import { HandlerPreset } from './constants';
+import type { ParserOptions } from '../parser';
 import type { Handler } from './types';
 import { extendHandler } from './utils';
 
@@ -37,10 +38,95 @@ export class Handlers {
 
     get(id?: string) : any {
         if (typeof id === 'string') {
-            return this.items[id];
+            return hasOwnProperty(this.items, id) ? this.items[id] : undefined;
         }
 
         return this.items;
+    }
+
+    has(id: string) : boolean {
+        return hasOwnProperty(this.items, id);
+    }
+
+    /**
+     * Check if the BBCode tag is inline (not block level).
+     * Unknown tags are inline.
+     *
+     * @param handler
+     */
+    isInline(handler: string | Handler) : boolean {
+        const item = this.resolve(handler);
+
+        return !item || item.isInline !== false;
+    }
+
+    /**
+     * Check if the HTML output of the tag is inline.
+     * Unknown tags are inline.
+     *
+     * @param handler
+     */
+    isHtmlInline(handler: string | Handler) : boolean {
+        const item = this.resolve(handler);
+
+        return !item || (item.isHtmlInline ?? item.isInline) !== false;
+    }
+
+    /**
+     * Check if a line break belongs at the given position of the tag.
+     * The handler's own flag wins; otherwise block level tags follow the
+     * matching parser option. Unknown tags never break.
+     *
+     * @param handler
+     * @param position
+     * @param options
+     */
+    breaks(
+        handler: string | Handler,
+        position: 'before' | 'start' | 'end' | 'after',
+        options: Pick<ParserOptions, 'breakBeforeBlock' | 'breakStartBlock' | 'breakEndBlock' | 'breakAfterBlock'>,
+    ) : boolean {
+        const item = this.resolve(handler);
+
+        if (!item) {
+            return false;
+        }
+
+        let flag : boolean | undefined;
+        let option : boolean;
+
+        switch (position) {
+            case 'before':
+                flag = item.breakBefore;
+                option = options.breakBeforeBlock;
+
+                break;
+            case 'start':
+                flag = item.breakStart;
+                option = options.breakStartBlock;
+
+                break;
+            case 'end':
+                flag = item.breakEnd;
+                option = options.breakEndBlock;
+
+                break;
+            default:
+                flag = item.breakAfter;
+                option = options.breakAfterBlock;
+
+                break;
+        }
+
+        if (flag === true) {
+            return true;
+        }
+
+        return item.isInline === false && option && flag !== false;
+    }
+
+    protected resolve(handler: string | Handler) : Handler | undefined {
+        return typeof handler === 'string' ? this.get(handler) : handler;
     }
 
     set(items: Record<string, Handler>) : void;

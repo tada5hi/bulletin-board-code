@@ -17,12 +17,6 @@ export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
     let html : string;
     let ret = '';
 
-    const isInline = (handler: Handler) : boolean => typeof handler === 'undefined' || (
-        typeof handler.isHtmlInline !== 'undefined' ?
-            handler.isHtmlInline :
-            handler.isInline
-    ) !== false;
-
     while (context.tokens.length > 0) {
         const token = context.tokens.shift();
 
@@ -34,7 +28,7 @@ export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
 
         switch (token.type) {
             case TokenType.OPEN: {
-                const lastChild = token.children[token.children.length - 1] || {} as Token;
+                const lastChild : Token | undefined = token.children[token.children.length - 1];
 
                 bbcode = context.handlers.get(token.name);
                 content = convertBBCodeToHTML({
@@ -47,14 +41,15 @@ export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
                 });
 
                 if (bbcode && bbcode.html) {
-                    const lastChildHandler = context.handlers.get(lastChild.name);
-
                     // Only add a line break to the end if this is
-                    // blocklevel and the last child wasn't block-level
+                    // blocklevel and the last child wasn't block-level.
+                    // Empty block level elements get one as well.
                     if (
-                        lastChildHandler &&
-                        !isInline(bbcode) &&
-                        isInline(lastChildHandler) &&
+                        !context.handlers.isHtmlInline(bbcode) &&
+                        (
+                            !lastChild ||
+                            (context.handlers.has(lastChild.name) && context.handlers.isHtmlInline(lastChild.name))
+                        ) &&
                         !bbcode.skipLastLineBreak
                     ) {
                         // Add placeholder br to end of block level

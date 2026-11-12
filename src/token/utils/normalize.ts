@@ -26,7 +26,6 @@ export function normalizeTokenNewLines(context: TokenNewLinesNormaliseContext) {
     let right : Token | undefined;
 
     let parentHandler : Handler | undefined;
-    let handler : Handler | undefined;
 
     let removedBreakEnd;
     let removedBreakBefore;
@@ -58,15 +57,7 @@ export function normalizeTokenNewLines(context: TokenNewLinesNormaliseContext) {
                 // First child of parent so must be opening line break
                 // (breakStartBlock, breakStart) e.g. [tag]\n
                 if (!left) {
-                    if (
-                        parentHandler.isInline === false &&
-                        options.breakStartBlock &&
-                        parentHandler.breakStart !== false
-                    ) {
-                        remove = true;
-                    }
-
-                    if (parentHandler.breakStart) {
+                    if (context.handlers.breaks(parentHandler, 'start', options)) {
                         remove = true;
                     }
                     // Last child of parent so must be end line break
@@ -74,15 +65,7 @@ export function normalizeTokenNewLines(context: TokenNewLinesNormaliseContext) {
                     // e.g. \n[/tag]
                     // remove last line break (breakEndBlock, breakEnd)
                 } else if (!removedBreakEnd && !right) {
-                    if (
-                        parentHandler.isInline === false &&
-                        options.breakEndBlock &&
-                        parentHandler.breakEnd !== false
-                    ) {
-                        remove = true;
-                    }
-
-                    if (parentHandler.breakEnd) {
+                    if (context.handlers.breaks(parentHandler, 'end', options)) {
                         remove = true;
                     }
 
@@ -94,22 +77,12 @@ export function normalizeTokenNewLines(context: TokenNewLinesNormaliseContext) {
                 left &&
                 left.type === TokenType.OPEN
             ) {
-                handler = context.handlers.get(left.name);
-
-                if (handler) {
-                    if (!onlyRemoveBreakAfter) {
-                        if (handler.isInline === false &&
-                            options.breakAfterBlock &&
-                            handler.breakAfter !== false) {
-                            remove = true;
-                        }
-
-                        if (handler.breakAfter) {
-                            remove = true;
-                        }
-                    } else if (handler.isInline === false) {
+                if (!onlyRemoveBreakAfter) {
+                    if (context.handlers.breaks(left.name, 'after', options)) {
                         remove = true;
                     }
+                } else if (!context.handlers.isInline(left.name)) {
+                    remove = true;
                 }
             }
 
@@ -119,18 +92,8 @@ export function normalizeTokenNewLines(context: TokenNewLinesNormaliseContext) {
                 right &&
                 right.type === TokenType.OPEN
             ) {
-                handler = context.handlers.get(right.name);
-
-                if (handler) {
-                    if (
-                        handler.isInline === false &&
-                        options.breakBeforeBlock &&
-                        handler.breakBefore !== false
-                    ) {
-                        remove = true;
-                    }
-
-                    if (handler.breakBefore) {
+                if (context.handlers.has(right.name)) {
+                    if (context.handlers.breaks(right.name, 'before', options)) {
                         remove = true;
                     }
 
