@@ -8,7 +8,7 @@
 import type { Token } from '../../token';
 import { TokenType } from '../../token';
 import { formatString } from '../../utils';
-import type { WalkContext, WalkDirection } from './types';
+import type { WalkContext, WalkDirection, WalkFrame } from './types';
 
 /**
  * Walk a token tree and render it in the given direction.
@@ -27,36 +27,62 @@ export function walkTokens(context: WalkContext, direction: WalkDirection) : str
         return !!handler && handlers.isHtmlInline(handler);
     };
 
-    const convert = (tokens: Token[]) : string => {
-        let output = '';
+    // The tree is walked with an explicit stack, so deeply nested
+    // input cannot exhaust the call stack.
+    const convert = (input: Token[]) : string => {
+        const stack : WalkFrame[] = [{
+            tokens: input,
+            index: 0,
+            output: '',
+        }];
 
-        for (let i = 0; i < tokens.length; i++) {
-            const token = tokens[i];
+        while (stack.length > 0) {
+            const frame = stack[stack.length - 1];
 
-            switch (token.type) {
-                case TokenType.OPEN: {
-                    output += convertElement(token, tokens[i + 1]);
+            if (frame.index < frame.tokens.length) {
+                const token = frame.tokens[frame.index++];
 
-                    break;
+                switch (token.type) {
+                    case TokenType.OPEN: {
+                        stack.push({
+                            tokens: token.children,
+                            index: 0,
+                            output: '',
+                            owner: token,
+                            next: frame.tokens[frame.index],
+                        });
+
+                        break;
+                    }
+                    case TokenType.NEWLINE: {
+                        frame.output += direction.lineBreak;
+
+                        break;
+                    }
+                    default: {
+                        frame.output += direction.renderText(token.value);
+
+                        break;
+                    }
                 }
-                case TokenType.NEWLINE: {
-                    output += direction.lineBreak;
 
-                    break;
-                }
-                default: {
-                    output += direction.renderText(token.value);
-
-                    break;
-                }
+                continue;
             }
+
+            stack.pop();
+
+            if (!frame.owner) {
+                return frame.output;
+            }
+
+            stack[stack.length - 1].output += renderElement(frame.owner, frame.output, frame.next);
         }
 
-        return output;
+        return '';
     };
 
-    const convertElement = (token: Token, next: Token | undefined) : string => {
-        let content = convert(token.children);
+    const renderElement = (token: Token, children: string, next: Token | undefined) : string => {
+        let content = children;
 
         const matches = direction.resolve(token)
             .filter((handler) => !!handler[direction.output]);

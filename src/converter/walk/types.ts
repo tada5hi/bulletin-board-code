@@ -58,3 +58,17 @@ export type WalkContext = {
     options?: ConverterOptions,
     handlers: Handlers
 };
+
+export type WalkFrame = {
+    tokens: Token[],
+    index: number,
+    output: string,
+    /**
+     * The element whose children are walked; undefined for the root.
+     */
+    owner?: Token,
+    /**
+     * The sibling following the owner.
+     */
+    next?: Token
+};

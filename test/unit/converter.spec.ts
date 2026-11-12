@@ -225,4 +225,22 @@ describe('src/converter/*.ts', () => {
 
         expect(parser.toBBCode(parser.toHTML(input))).toEqual(input);
     });
+
+    it('should convert a token tree of any depth', () => {
+        const depth = 20000;
+        const handlers = new Handlers();
+
+        let bbcode = new Token(TokenType.CONTENT, '#', 'x');
+        let html = new Token(TokenType.CONTENT, '#', 'x');
+
+        for (let i = 0; i < depth; i++) {
+            bbcode = new Token(TokenType.OPEN, 'b', '[b]', {}, [bbcode]);
+            html = new Token(TokenType.OPEN, 'strong', '<strong>', { class: [] }, [html]);
+        }
+
+        expect(convertBBCodeToHTML({ tokens: [bbcode], handlers }))
+            .toEqual(`${'<strong>'.repeat(depth)}x${'</strong>'.repeat(depth)}`);
+        expect(convertHTMLToBBCode({ tokens: [html], handlers }))
+            .toEqual(`${'[b]'.repeat(depth)}x${'[/b]'.repeat(depth)}`);
+    });
 });

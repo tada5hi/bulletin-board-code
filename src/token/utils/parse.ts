@@ -12,14 +12,6 @@ import { hasToken } from './has';
 import type { Handler } from '../../handler';
 import { lastArrayElement } from '../../utils';
 
-// A block level tag breaks unless its handler opts out.
-const BREAK_ALL_BLOCKS = {
-    breakBeforeBlock: true,
-    breakStartBlock: true,
-    breakEndBlock: true,
-    breakAfterBlock: true,
-};
-
 export function isChildAllowed(context: ChildAllowedCheckContext) {
     const parentBBCode = context.parent ? context.handlers.get(context.parent.name) : {} as Handler;
 
@@ -238,7 +230,7 @@ export function parseTokens(context: TokenParseContext) {
                     // skip if the next tag is the closing tag for
                     // the option tag, i.e. [/*]
                     if (!(next.type === TokenType.CLOSE && next.name === curr.name)) {
-                        if (context.handlers.breaks(curr.name, 'after', BREAK_ALL_BLOCKS)) {
+                        if (context.handlers.breaks(curr.name, 'after', context.options)) {
                             openTags.pop();
                         }
                     }

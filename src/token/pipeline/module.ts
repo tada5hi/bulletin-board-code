@@ -27,6 +27,7 @@ export function parseBBCodeTokens(context: TokenPipelineContext) : Token[] {
     const tokens = parseTokens({
         items: tokenizeBBCode(context.input, handlers),
         handlers,
+        options,
         fixInvalidChildren: options.fixInvalidChildren,
     });
 

@@ -47,6 +47,13 @@ describe('src/token/pipeline', () => {
         expect(parser.toHTML('[list]\n[*]a\n[*]b\n[/list]')).toEqual('<ul><li>a</li><li>b</li></ul>');
     });
 
+    it('should keep a line break inside a [*] list item when breakAfterBlock is off', () => {
+        const parser = new Parser({ breakAfterBlock: false });
+
+        expect(parser.toHTML('[list][*]a\n[*]b\n[/list]'))
+            .toEqual('<ul><li>a<br /></li><li>b<br /></li></ul>');
+    });
+
     it('should keep unclosed and stray closing tags literal', () => {
         const parser = new Parser();
 

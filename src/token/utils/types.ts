@@ -9,9 +9,15 @@ import type { Handlers } from '../../handler';
 import type { Token } from '../module';
 import type { TokenPipelineOptions } from '../pipeline/types';
 
+export type TokenBreakOptions = Pick<
+    TokenPipelineOptions,
+    'breakBeforeBlock' | 'breakStartBlock' | 'breakEndBlock' | 'breakAfterBlock'
+>;
+
 export type TokenParseContext = {
     items: Token[],
     handlers: Handlers,
+    options: TokenBreakOptions,
     fixInvalidChildren: boolean
 };
 
@@ -31,6 +37,6 @@ export type NestingTokenFixContext = {
 export type TokenNewLinesNormaliseContext = {
     children: Token[],
     handlers: Handlers,
-    options: Pick<TokenPipelineOptions, 'breakBeforeBlock' | 'breakStartBlock' | 'breakEndBlock' | 'breakAfterBlock'>,
+    options: TokenBreakOptions,
     onlyRemoveBreakAfter?: boolean
 };
