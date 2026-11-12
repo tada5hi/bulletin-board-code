@@ -41,15 +41,11 @@ export type ConverterContext = {
     options: ConverterOptions
     handlers: Handlers,
     /**
-     * Convert tokens in the direction of the current conversion.
+     * Convert tokens in the direction of the current conversion
+     * as the content of the current handler: the handlers nested
+     * inside it (e.g. attribute matches) and the block line break apply.
      */
-    convert: (tokens: Token[]) => string,
-    /**
-     * Convert tokens as the content of the current handler:
-     * like convert, plus the handlers nested inside the current one
-     * (e.g. attribute matches) and the block line break.
-     */
-    convertContent: (tokens: Token[]) => string
+    convert: (tokens: Token[]) => string
 };
 
 export type Handler = {

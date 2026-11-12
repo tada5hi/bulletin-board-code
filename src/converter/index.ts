@@ -7,4 +7,3 @@
 
 export * from './bbcode';
 export * from './html';
-export * from './types';

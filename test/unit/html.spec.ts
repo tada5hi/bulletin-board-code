@@ -53,17 +53,9 @@ describe('html to bbcode: line breaks after blocks', () => {
 
         tokens[0].children.push(new Token(TokenType.CONTENT, '#', 'a'));
 
-        expect(convertHTMLToBBCode({
-            tokens, 
-            options: {}, 
-            handlers: new Handlers(), 
-        }))
+        expect(convertHTMLToBBCode(tokens, new Handlers()))
             .toEqual('[quote]a[/quote]\nb');
-        expect(convertHTMLToBBCode({
-            tokens, 
-            options: { breakAfterBlock: false }, 
-            handlers: new Handlers(), 
-        }))
+        expect(convertHTMLToBBCode(tokens, new Handlers(), { breakAfterBlock: false }))
             .toEqual('[quote]a[/quote]b');
     });
 
@@ -149,11 +141,7 @@ describe('html to bbcode: whitespace normalisation', () => {
 
         const tokens = tokenizeHTML('<p> a </p>\n');
 
-        convertHTMLToBBCode({
-            tokens, 
-            options: { lazy: true }, 
-            handlers: new Handlers(), 
-        });
+        convertHTMLToBBCode(tokens, new Handlers(), { lazy: true });
 
         expect(tokens[0].children[0].value).toEqual(' a ');
         expect(tokens[1].value).toEqual('\n');

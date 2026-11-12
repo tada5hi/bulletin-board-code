@@ -10,19 +10,24 @@ import { Handlers } from '../handler';
 import type { Token } from '../token';
 import { parseBBCodeTokens, parseHTMLTokens } from '../token/pipeline';
 import { isObject } from '../utils';
-import type { ParserInterface, ParserOptions } from './types';
+import type {
+    BBCodeParseOptions,
+    IParser,
+    ParserOptions,
+    ParserOptionsInput,
+} from './types';
 import { cleanupBBCode } from './utils';
 import { ParserDefaultOptions } from './constants';
 import { convertBBCodeToHTML, convertHTMLToBBCode } from '../converter';
 
-export class Parser implements ParserInterface {
+export class Parser implements IParser {
     protected options: ParserOptions;
 
-    protected handlers : Handlers;
+    public readonly handlers : Handlers;
 
     // --------------------------------------------------
 
-    constructor(options?: Partial<ParserOptions>) {
+    constructor(options?: ParserOptionsInput) {
         this.options = { ...ParserDefaultOptions, ...(options || {}) };
         this.handlers = new Handlers(this.options.handlers);
     }
@@ -53,14 +58,14 @@ export class Parser implements ParserInterface {
      * Tokenize bbcode input string.
      *
      * @param input
-     * @param preserveNewLines
+     * @param options
      */
-    parseBBCode(input: string, preserveNewLines?: boolean) : Token[] {
+    parseBBCode(input: string, options?: BBCodeParseOptions) : Token[] {
         return parseBBCodeTokens({
             input,
             handlers: this.handlers,
             options: this.options,
-            preserveNewLines,
+            preserveNewLines: options?.preserveNewLines,
         });
     }
 
@@ -82,25 +87,14 @@ export class Parser implements ParserInterface {
      * Convert a bbcode string to a html string.
      *
      * @param input
-     * @param preserveNewLines
+     * @param options
      */
-    toHTML(input: string, preserveNewLines?: boolean) : string {
-        return convertBBCodeToHTML({
-            tokens: this.parseBBCode(input, preserveNewLines),
-            options: { lazy: this.options.lazyTransformation },
-            handlers: this.handlers,
-        });
-    }
-
-    /**
-     * Alias for toHTML.
-     *
-     * @alias toHTML
-     * @param input
-     * @param preserveNewLines
-     */
-    fromBBCode(input: string, preserveNewLines?: boolean) : string {
-        return this.toHTML(input, preserveNewLines);
+    toHTML(input: string, options?: BBCodeParseOptions) : string {
+        return convertBBCodeToHTML(
+            this.parseBBCode(input, options),
+            this.handlers,
+            { lazy: this.options.lazyTransformation },
+        );
     }
 
     // ----------------------------------------------------------
@@ -109,11 +103,11 @@ export class Parser implements ParserInterface {
      * Clean up bbcode ( remove unnecessary ident, ... )
      *
      * @param input
-     * @param preserveNewLines
+     * @param options
      */
-    cleanupBBCode(input: string, preserveNewLines?: boolean) : string {
+    cleanupBBCode(input: string, options?: BBCodeParseOptions) : string {
         return cleanupBBCode({
-            tokens: this.parseBBCode(input, preserveNewLines),
+            tokens: this.parseBBCode(input, options),
             options: this.options,
             handlers: this.handlers,
         });
@@ -127,26 +121,38 @@ export class Parser implements ParserInterface {
      * @param input
      */
     toBBCode(input: string) : string {
-        return convertHTMLToBBCode({
-            tokens: this.parseHTML(input),
-            options: {
+        return convertHTMLToBBCode(
+            this.parseHTML(input),
+            this.handlers,
+            {
                 lazy: this.options.lazyTransformation,
                 breakBeforeBlock: this.options.breakBeforeBlock,
                 breakStartBlock: this.options.breakStartBlock,
                 breakEndBlock: this.options.breakEndBlock,
                 breakAfterBlock: this.options.breakAfterBlock,
             },
-            handlers: this.handlers,
-        });
+        );
     }
+}
 
-    /**
-     * Alias for toBBCode.
-     *
-     * @alias toBBCode
-     * @param input
-     */
-    fromHTML(input: string) : string {
-        return this.toBBCode(input);
-    }
+/**
+ * Convert a bbcode string to a html string with a parser for the given options.
+ *
+ * @param input
+ * @param options
+ */
+export function bbcodeToHTML(input: string, options?: ParserOptionsInput & BBCodeParseOptions) : string {
+    const { preserveNewLines, ...parserOptions } = options || {};
+
+    return new Parser(parserOptions).toHTML(input, { preserveNewLines });
+}
+
+/**
+ * Convert a html string to a bbcode string with a parser for the given options.
+ *
+ * @param input
+ * @param options
+ */
+export function htmlToBBCode(input: string, options?: ParserOptionsInput) : string {
+    return new Parser(options).toBBCode(input);
 }

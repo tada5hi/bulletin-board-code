@@ -166,8 +166,7 @@ export function walkTokens(context: WalkContext, direction: WalkDirection) : str
                     attributes: token.attrs,
                     content: output,
                     options,
-                    convert,
-                    convertContent: (tokens) => applyHandlers(token, matches, tokens, convert(tokens), inner),
+                    convert: (tokens) => applyHandlers(token, matches, tokens, convert(tokens), inner),
                 });
             }
         }

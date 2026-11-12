@@ -28,15 +28,11 @@ describe('src/converter/*.ts', () => {
     });
 
     it('should emit \\n for html newline tokens', () => {
-        const output = convertHTMLToBBCode({
-            tokens: [
-                new Token(TokenType.CONTENT, '#', 'a'),
-                new Token(TokenType.NEWLINE, '#newline', '\n'),
-                new Token(TokenType.CONTENT, '#', 'b'),
-            ],
-            options: { lazy: true },
-            handlers: new Handlers(),
-        });
+        const output = convertHTMLToBBCode([
+            new Token(TokenType.CONTENT, '#', 'a'),
+            new Token(TokenType.NEWLINE, '#newline', '\n'),
+            new Token(TokenType.CONTENT, '#', 'b'),
+        ], new Handlers(), { lazy: true });
 
         expect(output).toEqual('a\nb');
     });
@@ -111,17 +107,9 @@ describe('src/converter/*.ts', () => {
         const quote = () => new Token(TokenType.OPEN, 'quote', '[quote]', {});
 
         // empty block elements get a placeholder <br /> in html only
-        expect(convertBBCodeToHTML({
-            tokens: [quote()],
-            options: {},
-            handlers,
-        }))
+        expect(convertBBCodeToHTML([quote()], handlers))
             .toEqual('<blockquote><br /></blockquote>');
-        expect(convertHTMLToBBCode({
-            tokens: [new Token(TokenType.OPEN, 'blockquote', '<blockquote>', {})],
-            options: {},
-            handlers,
-        }))
+        expect(convertHTMLToBBCode([new Token(TokenType.OPEN, 'blockquote', '<blockquote>', {})], handlers))
             .toEqual('[quote][/quote]');
     });
 
@@ -131,16 +119,8 @@ describe('src/converter/*.ts', () => {
             new Token(TokenType.CONTENT, '#', 'a'),
         ], new Token(TokenType.CLOSE, 'x', '[/x]'));
 
-        expect(convertBBCodeToHTML({
-            tokens: [token],
-            options: { lazy: true },
-            handlers,
-        })).toEqual('');
-        expect(convertBBCodeToHTML({
-            tokens: [token],
-            options: {},
-            handlers,
-        })).toEqual('[x]a[/x]');
+        expect(convertBBCodeToHTML([token], handlers, { lazy: true })).toEqual('');
+        expect(convertBBCodeToHTML([token], handlers)).toEqual('[x]a[/x]');
     });
 
     it('should not consume the input tokens', () => {
@@ -149,11 +129,7 @@ describe('src/converter/*.ts', () => {
         const bbcode = parser.parseBBCode('[b]foo[/b] bar');
         const bbcodeLength = bbcode.length;
 
-        convertBBCodeToHTML({
-            tokens: bbcode,
-            options: {},
-            handlers: new Handlers(),
-        });
+        convertBBCodeToHTML(bbcode, new Handlers());
 
         expect(bbcode.length).toEqual(bbcodeLength);
         expect(bbcode[0].attrs).not.toHaveProperty('0');
@@ -161,11 +137,7 @@ describe('src/converter/*.ts', () => {
         const html = parser.parseHTML('<strong>foo</strong> bar<p>x</p>');
         const htmlLength = html.length;
 
-        convertHTMLToBBCode({
-            tokens: html,
-            options: { lazy: true },
-            handlers: new Handlers(),
-        });
+        convertHTMLToBBCode(html, new Handlers(), { lazy: true });
 
         expect(html.length).toEqual(htmlLength);
         expect(html[0].attrs).not.toHaveProperty('0');
@@ -176,11 +148,7 @@ describe('src/converter/*.ts', () => {
             new Token(TokenType.CONTENT, '#', 'foo'),
         ]);
 
-        const html = convertBBCodeToHTML({
-            tokens: [token],
-            options: {},
-            handlers: new Handlers(),
-        });
+        const html = convertBBCodeToHTML([token], new Handlers());
 
         expect(html).toEqual('<a href="bar">foo</a>');
         expect(token.attrs).toEqual({ default: 'bar' });
@@ -207,11 +175,7 @@ describe('src/converter/*.ts', () => {
 
         const tokens = parser.parseHTML('<blockquote><cite>bar</cite>foo</blockquote>');
 
-        expect(convertHTMLToBBCode({
-            tokens,
-            options: { lazy: true },
-            handlers: new Handlers(),
-        }))
+        expect(convertHTMLToBBCode(tokens, new Handlers(), { lazy: true }))
             .toEqual('[quote=bar]foo[/quote]');
         expect(tokens[0].children).toHaveLength(2);
 
@@ -238,9 +202,9 @@ describe('src/converter/*.ts', () => {
             html = new Token(TokenType.OPEN, 'strong', '<strong>', { class: [] }, [html]);
         }
 
-        expect(convertBBCodeToHTML({ tokens: [bbcode], handlers }))
+        expect(convertBBCodeToHTML([bbcode], handlers))
             .toEqual(`${'<strong>'.repeat(depth)}x${'</strong>'.repeat(depth)}`);
-        expect(convertHTMLToBBCode({ tokens: [html], handlers }))
+        expect(convertHTMLToBBCode([html], handlers))
             .toEqual(`${'[b]'.repeat(depth)}x${'[/b]'.repeat(depth)}`);
     });
 });

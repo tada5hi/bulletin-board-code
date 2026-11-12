@@ -5,14 +5,30 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
+import type { ConverterOptions, Handlers } from '../../handler';
+import type { Token } from '../../token';
 import { escapeCharacters } from '../../utils';
-import type { BBCodeToHTMLConvertContext } from '../types';
 import { walkTokens } from '../walk';
 
-export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) : string {
-    return walkTokens(context, {
+/**
+ * Render bbcode tokens as html; the input tokens are not mutated.
+ *
+ * @param tokens
+ * @param handlers
+ * @param options
+ */
+export function convertBBCodeToHTML(
+    tokens: Token[],
+    handlers: Handlers,
+    options?: ConverterOptions,
+) : string {
+    return walkTokens({
+        tokens,
+        handlers,
+        options,
+    }, {
         resolve: (token) => {
-            const handler = context.handlers.get(token.name);
+            const handler = handlers.get(token.name);
 
             return handler ? [handler] : [];
         },

@@ -5,10 +5,10 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
+import type { ConverterOptions, Handlers } from '../../handler';
 import type { Token } from '../../token';
 import { isTagMatch } from '../../handler/utils';
 import { HTMLBlockTags, TokenBreakDefaultOptions } from '../../token/pipeline';
-import type { HTMLToBBCodeConvertContext } from '../types';
 import { walkTokens } from '../walk';
 
 /**
@@ -35,8 +35,18 @@ function isSeparated(token: Token, content: string) : boolean {
         !content.endsWith('\n');
 }
 
-export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) : string {
-    const options = context.options || {};
+/**
+ * Render html tokens as bbcode; the input tokens are not mutated.
+ *
+ * @param tokens
+ * @param handlers
+ * @param options
+ */
+export function convertHTMLToBBCode(
+    tokens: Token[],
+    handlers: Handlers,
+    options: ConverterOptions = {},
+) : string {
     const breakOptions = {
         breakBeforeBlock: options.breakBeforeBlock ?? TokenBreakDefaultOptions.breakBeforeBlock,
         breakStartBlock: options.breakStartBlock ?? TokenBreakDefaultOptions.breakStartBlock,
@@ -52,8 +62,12 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) : strin
         return name === 'br' || (!!options.lazy && droppedTags.includes(name));
     };
 
-    return walkTokens(context, {
-        resolve: (token) => (isIntrinsic(token) ? [] : context.handlers.match(token)),
+    return walkTokens({
+        tokens,
+        handlers,
+        options,
+    }, {
+        resolve: (token) => (isIntrinsic(token) ? [] : handlers.match(token)),
         output: 'bbcode',
         lineBreak: '\n',
         breakEmptyBlock: false,
@@ -91,7 +105,7 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) : strin
             matches,
         }) => {
             // The bbcode parser swallows one line break after such a tag.
-            if (context.handlers.breaks(matches[0], 'after', breakOptions)) {
+            if (handlers.breaks(matches[0], 'after', breakOptions)) {
                 return { content, breakAfter: true };
             }
 

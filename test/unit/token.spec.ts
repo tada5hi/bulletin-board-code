@@ -104,8 +104,10 @@ describe('src/index.ts', () => {
             'QuoteType',
             'Token',
             'TokenType',
+            'bbcodeToHTML',
             'convertBBCodeToHTML',
             'convertHTMLToBBCode',
+            'htmlToBBCode',
             'tokenizeBBCode',
             'tokenizeHTML',
         ]);
