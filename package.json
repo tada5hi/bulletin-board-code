@@ -1,6 +1,6 @@
 {
     "name": "bulletin-board-code",
-    "version": "1.0.3",
+    "version": "2.0.0",
     "description": "Bidirectional convert between BBCode and HTML.",
     "author": {
         "name": "Peter Placzek",
