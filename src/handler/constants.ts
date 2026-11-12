@@ -12,7 +12,6 @@ import {
     stripQuotes,
 } from './utils';
 import { escapeCharacters, escapeUriScheme, getObjectPathValue } from '../utils';
-import { convertHTMLToBBCode } from '../converter';
 
 /* istanbul ignore next */
 export const HandlerPreset : Record<string, Handler> = {
@@ -392,12 +391,8 @@ export const HandlerPreset : Record<string, Handler> = {
                     if (citeChild) {
                         author = citeChild.value.replace(/(^\s+|\s+$)/g, '');
 
-                        context.token.children.splice(index, 1);
-                        context.content = convertHTMLToBBCode({
-                            tokens: context.token.children,
-                            options: context.options,
-                            handlers: context.handlers,
-                        });
+                        context.content = context.convert(context.token.children
+                            .filter((_child, i) => i !== index));
                     }
                 }
             }

@@ -132,6 +132,8 @@ describe('src/handler/module.ts (match)', () => {
     const matrix : [Condition['attribute'], TokenAttributes, boolean][] = [
         [{ 'data-a': null }, { 'data-a': '' }, true],
         [{ 'data-a': null }, {}, false],
+        [{ class: null }, { class: ['foo'] }, true],
+        [{ class: null }, { class: [] }, false],
         [{ 'data-a': 'x' }, { 'data-a': ' x ' }, true],
         [{ 'data-a': 'x' }, { 'data-a': 'y' }, false],
         [{ 'data-a': 5 }, { 'data-a': '5' }, true],
@@ -167,5 +169,15 @@ describe('src/handler/module.ts (match)', () => {
         const handlers = new Handlers({ probe: { html: '', conditions: [{}] } });
 
         expect(handlers.match(createToken('x-probe'))).toEqual([]);
+    });
+
+    it('should never match attribute conditions without keys', () => {
+        const handlers = new Handlers({
+            plain: { html: '', conditions: [{ tag: 'x-probe' }] },
+            empty: { html: '', conditions: [{ tag: 'x-probe', attribute: {} }] },
+            loose: { html: '', conditions: [{ attribute: {} }] },
+        });
+
+        expect(handlers.match(createToken('x-probe', { 'data-a': '1' }))).toEqual([handlers.get('plain')]);
     });
 });

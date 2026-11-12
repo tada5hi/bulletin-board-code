@@ -7,7 +7,6 @@
 
 import type { QuoteType } from '../constants';
 import type { Token, TokenAttributes } from '../token';
-import type { ConverterOptions } from '../converter';
 import type { Handlers } from './module';
 
 export type Attribute = {
@@ -23,12 +22,20 @@ export type Condition = {
     attribute?: Partial<Attribute>
 };
 
+export type ConverterOptions = {
+    lazy?: boolean
+};
+
 export type ConverterContext = {
     token: Token,
     attributes: TokenAttributes,
     content: string,
     options: ConverterOptions
-    handlers: Handlers
+    handlers: Handlers,
+    /**
+     * Convert tokens in the direction of the current conversion.
+     */
+    convert: (tokens: Token[]) => string
 };
 
 export type Handler = {

@@ -12,7 +12,7 @@ import { hasOwnProperty, isObject } from '../../utils';
 /**
  * Compare a condition value against a token value.
  *
- * - falsy: the value must be present
+ * - falsy: the value must be present (an empty array counts as absent)
  * - string/number: equal after trim (array token values must contain it)
  * - array: any element matches
  * - object: every key matches recursively
@@ -22,6 +22,10 @@ import { hasOwnProperty, isObject } from '../../utils';
  */
 function isValueMatch(expected: unknown, actual: unknown) : boolean {
     if (!expected) {
+        if (Array.isArray(actual)) {
+            return actual.length > 0;
+        }
+
         return typeof actual !== 'undefined';
     }
 
@@ -70,8 +74,13 @@ enum MatchKind {
 }
 
 function matchCondition(condition: Condition, token: Token) : MatchKind {
-    if (condition.attribute && !isValueMatch(condition.attribute, token.attrs)) {
-        return MatchKind.NONE;
+    if (condition.attribute) {
+        if (
+            Object.keys(condition.attribute).length === 0 ||
+            !isValueMatch(condition.attribute, token.attrs)
+        ) {
+            return MatchKind.NONE;
+        }
     }
 
     if (condition.tag) {

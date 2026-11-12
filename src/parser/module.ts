@@ -112,10 +112,7 @@ export class Parser implements ParserInterface {
     toHTML(input: string, preserveNewLines?: boolean) : string {
         return convertBBCodeToHTML({
             tokens: this.parseBBCode(input, preserveNewLines),
-            options: {
-                isRoot: true,
-                lazy: this.options.lazyTransformation,
-            },
+            options: { lazy: this.options.lazyTransformation },
             handlers: this.handlers,
         });
     }
@@ -158,10 +155,7 @@ export class Parser implements ParserInterface {
     toBBCode(input: string, _preserveNewLines?: boolean) : string {
         return convertHTMLToBBCode({
             tokens: this.parseHTML(input),
-            options: {
-                isRoot: true,
-                lazy: this.options.lazyTransformation,
-            },
+            options: { lazy: this.options.lazyTransformation },
             handlers: this.handlers,
         });
     }

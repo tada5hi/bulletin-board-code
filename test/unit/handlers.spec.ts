@@ -88,6 +88,6 @@ describe('src/handler/module.ts', () => {
     it('should apply the block line-break options of the parser', () => {
         expect(new Parser().toHTML('[quote]a[/quote]\nb')).toEqual('<blockquote>a</blockquote>b');
         expect(new Parser({ breakAfterBlock: false }).toHTML('[quote]a[/quote]\nb'))
-            .toEqual('<blockquote>a</blockquote><br /></div>\nb');
+            .toEqual('<blockquote>a</blockquote><br />b');
     });
 });
