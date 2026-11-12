@@ -9,12 +9,13 @@ import type { Handler } from './types';
 import { QuoteType } from '../constants';
 import {
     normaliseColor,
+    renderLiteralTag,
+    renderStyleValue,
+    renderUrlAttribute,
     stripQuotes,
 } from './utils';
-import { escapeCharacters, escapeUriScheme, getObjectPathValue } from '../utils';
-import { convertHTMLToBBCode } from '../converter';
+import { escapeCharacters, getObjectPathValue } from '../utils';
 
-/* istanbul ignore next */
 export const HandlerPreset : Record<string, Handler> = {
     h1: {
         conditions: [{ tag: 'h1' }],
@@ -63,7 +64,7 @@ export const HandlerPreset : Record<string, Handler> = {
         conditions: [
             { tag: 'i' },
             { tag: 'em' },
-            { attribute: { style: { textDecoration: ['italic', 'oblique'] } } },
+            { attribute: { style: { fontStyle: ['italic', 'oblique'] } } },
         ],
         bbcode: '[i]{0}[/i]',
         html: '<em>{0}</em>',
@@ -128,7 +129,15 @@ export const HandlerPreset : Record<string, Handler> = {
 
             return `[font=${stripQuotes(font)}]${context.content}[/font]`;
         },
-        html: '<span style="font-family: {default}">{0}</span>',
+        html(context) {
+            const font = renderStyleValue(context.attributes.default);
+
+            if (typeof font === 'undefined') {
+                return renderLiteralTag(context);
+            }
+
+            return `<span style="font-family: ${font}">${context.content}</span>`;
+        },
     },
     // END_COMMAND
 
@@ -146,7 +155,15 @@ export const HandlerPreset : Record<string, Handler> = {
 
             return `[size=${fontSize}]${context.content}[/size]`;
         },
-        html: '<span style="font-size: {default}">{!0}</span>',
+        html(context) {
+            const size = renderStyleValue(context.attributes.default);
+
+            if (typeof size === 'undefined') {
+                return renderLiteralTag(context);
+            }
+
+            return `<span style="font-size: ${size}">${context.content}</span>`;
+        },
     },
     // END_COMMAND
 
@@ -170,11 +187,15 @@ export const HandlerPreset : Record<string, Handler> = {
             return `[color=${normaliseColor(color)}]${context.content}[/color]`;
         },
         html(context) {
-            if (!context.attributes.default) {
-                return '';
+            const color = renderStyleValue(context.attributes.default ?
+                normaliseColor(context.attributes.default) :
+                undefined);
+
+            if (typeof color === 'undefined') {
+                return renderLiteralTag(context);
             }
 
-            return `<span style="color: ${escapeCharacters(normaliseColor(context.attributes.default), true)}">${context.content}</span>`;
+            return `<span style="color: ${color}">${context.content}</span>`;
         },
     },
     // END_COMMAND
@@ -326,7 +347,13 @@ export const HandlerPreset : Record<string, Handler> = {
                 attribs += ` height="${escapeCharacters(height, true)}"`;
             }
 
-            return `<img${attribs} src="${escapeUriScheme(context.content)}" />`;
+            const src = renderUrlAttribute(context.content, true);
+
+            if (typeof src === 'undefined') {
+                return renderLiteralTag(context);
+            }
+
+            return `<img${attribs} src="${src}" />`;
         },
     },
     // END_COMMAND
@@ -350,9 +377,15 @@ export const HandlerPreset : Record<string, Handler> = {
             return `[url=${url}]${context.content}[/url]`;
         },
         html(context) {
-            context.attributes.default = context.attributes.default ? escapeCharacters(context.attributes.default, true) : context.content;
+            const href = context.attributes.default ?
+                renderUrlAttribute(context.attributes.default, false) :
+                renderUrlAttribute(context.content, true);
 
-            return `<a href="${escapeUriScheme(context.attributes.default)}">${context.content}</a>`;
+            if (typeof href === 'undefined') {
+                return renderLiteralTag(context);
+            }
+
+            return `<a href="${href}">${context.content}</a>`;
         },
     },
     // END_COMMAND
@@ -361,7 +394,15 @@ export const HandlerPreset : Record<string, Handler> = {
     email: {
         quoteType: QuoteType.never,
         html(context) {
-            return `<a href="mailto:${context.attributes.default ? escapeCharacters(context.attributes.default, true) : context.content}">${context.content}</a>`;
+            const href = context.attributes.default ?
+                renderUrlAttribute(`mailto:${context.attributes.default}`, false) :
+                renderUrlAttribute(`mailto:${context.content}`, true);
+
+            if (typeof href === 'undefined') {
+                return renderLiteralTag(context);
+            }
+
+            return `<a href="${href}">${context.content}</a>`;
         },
     },
     // END_COMMAND
@@ -392,12 +433,9 @@ export const HandlerPreset : Record<string, Handler> = {
                     if (citeChild) {
                         author = citeChild.value.replace(/(^\s+|\s+$)/g, '');
 
-                        context.token.children.splice(index, 1);
-                        context.content = convertHTMLToBBCode({
-                            tokens: context.token.children,
-                            options: context.options,
-                            handlers: context.handlers,
-                        });
+                        // Keep the wrappers of the handlers nested inside the quote.
+                        context.content = context.convert(context.token.children
+                            .filter((_child, i) => i !== index));
                     }
                 }
             }
@@ -529,9 +567,14 @@ export const HandlerPreset : Record<string, Handler> = {
 
             return value ? `[youtube]${value}[/youtube]` : '';
         },
-        html: '<iframe width="560" height="315" ' +
-            'src="https://www.youtube-nocookie.com/embed/{0}?wmode=opaque" ' +
-            'data-youtube-id="{0}" allowfullscreen></iframe>',
+        html(context) {
+            // the scheme is fixed, so only the converted content needs its quotes escaped
+            const id = context.content.replace(/"/g, '&#34;');
+
+            return '<iframe width="560" height="315" ' +
+                `src="https://www.youtube-nocookie.com/embed/${id}?wmode=opaque" ` +
+                `data-youtube-id="${id}" allowfullscreen></iframe>`;
+        },
     },
     // END_COMMAND
 

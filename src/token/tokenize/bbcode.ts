@@ -13,7 +13,7 @@ import type { TokenAttributes } from '../types';
 
 const attrRegex = /([^\s=]+)=(?:(["'])((?:\\\2|(?!\2))*?)\2|((?:.(?!\s\S+=))*.))/g;
 
-export function tokenizeAttrs(attrs: string) : Record<string, any> {
+function tokenizeAttrs(attrs: string) : Record<string, any> {
     let matches : string[] | null;
     /**
      * ([^\s=]+)                Anything that's not a space or equals
@@ -56,7 +56,7 @@ export function tokenizeAttrs(attrs: string) : Record<string, any> {
     return ret;
 }
 
-export function tokenizeTag(type: `${TokenType}`, input: string, handlerManager: Handlers) {
+function tokenizeTag(type: `${TokenType}`, input: string, handlerManager: Handlers) {
     let matches : string[] | null;
     let attrs;
     let name;

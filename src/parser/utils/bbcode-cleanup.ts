@@ -5,10 +5,24 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
+import type { Token } from '../../token';
 import { TokenType } from '../../token';
-import type { BBCodeCleanupContext } from '../types';
+import type { ParserOptions } from '../types';
 import { QuoteType } from '../../constants';
-import type { Handler } from '../../handler';
+import type { Handler, Handlers } from '../../handler';
+
+type BBCodeCleanupContext = {
+    tokens: Token[],
+    options: ParserOptions,
+    handlers: Handlers
+};
+
+const NO_BLOCK_BREAKS = {
+    breakBeforeBlock: false,
+    breakStartBlock: false,
+    breakEndBlock: false,
+    breakAfterBlock: false,
+};
 
 function quote(str: string, quoteType: `${QuoteType}` | ((str: string, name: string) => string), name: string) {
     const needsQuotes = /\s|=/.test(str);
@@ -27,7 +41,6 @@ function quote(str: string, quoteType: `${QuoteType}` | ((str: string, name: str
 export function cleanupBBCode(context: BBCodeCleanupContext) {
     let bbcode : Handler | undefined;
 
-    let isBlock : boolean;
     let isSelfClosing : boolean;
     let breakBefore : boolean;
     let breakStart : boolean;
@@ -49,13 +62,14 @@ export function cleanupBBCode(context: BBCodeCleanupContext) {
         bbcode = context.handlers.get(token.name);
 
         if (bbcode) {
-            isBlock = !(typeof bbcode.isHtmlInline !== 'undefined' ? bbcode.isHtmlInline : bbcode.isInline);
             isSelfClosing = !!bbcode.isSelfClosing;
 
-            breakBefore = (isBlock && context.options.breakBeforeBlock && bbcode.breakBefore !== false) || !!bbcode.breakBefore;
-            breakStart = (isBlock && !isSelfClosing && context.options.breakStartBlock && bbcode.breakStart !== false) || !!bbcode.breakStart;
-            breakEnd = (isBlock && context.options.breakEndBlock && bbcode.breakEnd !== false) || !!bbcode.breakEnd;
-            breakAfter = (isBlock && context.options.breakAfterBlock && bbcode.breakAfter !== false) || !!bbcode.breakAfter;
+            breakBefore = context.handlers.breaks(bbcode, 'before', context.options);
+            // The block option does not apply after the start of a self-closing tag,
+            // only the handler's own flag does.
+            breakStart = context.handlers.breaks(bbcode, 'start', isSelfClosing ? NO_BLOCK_BREAKS : context.options);
+            breakEnd = context.handlers.breaks(bbcode, 'end', context.options);
+            breakAfter = context.handlers.breaks(bbcode, 'after', context.options);
         } else {
             isSelfClosing = false;
 

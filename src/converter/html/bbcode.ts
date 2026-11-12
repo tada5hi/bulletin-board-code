@@ -5,101 +5,117 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
+import type { ConverterOptions, Handlers } from '../../handler';
 import type { Token } from '../../token';
-import { TokenType } from '../../token';
-import type { Handler } from '../../handler';
-import { findHandlerForHTMLToken } from '../../handler/utils';
-import { escapeCharacters, formatString } from '../../utils';
-import type { HTMLToBBCodeConvertContext } from '../types';
+import { isTagMatch } from '../../handler/utils';
+import { HTMLBlockTags, HTMLNonRenderedTags, TokenBreakDefaultOptions } from '../../token/pipeline';
+import { walkTokens } from '../walk';
 
-export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
-    context.options = context.options || {};
+/**
+ * Check if a token is a block level element.
+ *
+ * @param token
+ */
+function isBlock(token: Token) : boolean {
+    return HTMLBlockTags.includes(token.name.toLowerCase());
+}
 
-    let output = '';
+/**
+ * Check if a block level element separates its output from what follows.
+ *
+ * @param token
+ * @param content
+ */
+function isSeparated(token: Token, content: string) : boolean {
+    return isBlock(token) &&
+        content.length > 0 &&
+        !content.endsWith('\n');
+}
 
-    const isInline = (handler: Handler) : boolean => typeof handler === 'undefined' || (
-        typeof handler.isHtmlInline !== 'undefined' ?
-            handler.isHtmlInline :
-            handler.isInline
-    ) !== false;
+/**
+ * Render html tokens as bbcode; the input tokens are not mutated.
+ *
+ * @param tokens
+ * @param handlers
+ * @param options
+ */
+export function convertHTMLToBBCode(
+    tokens: Token[],
+    handlers: Handlers,
+    options: ConverterOptions = {},
+) : string {
+    const breakOptions = {
+        breakBeforeBlock: options.breakBeforeBlock ?? TokenBreakDefaultOptions.breakBeforeBlock,
+        breakStartBlock: options.breakStartBlock ?? TokenBreakDefaultOptions.breakStartBlock,
+        breakEndBlock: options.breakEndBlock ?? TokenBreakDefaultOptions.breakEndBlock,
+        breakAfterBlock: options.breakAfterBlock ?? TokenBreakDefaultOptions.breakAfterBlock,
+    };
 
-    while (context.tokens.length > 0) {
-        const token = context.tokens.shift();
+    // Line breaks and, in lazy mode, dropped elements follow their
+    // element rules whatever handlers their attributes match.
+    const isIntrinsic = (token: Token) : boolean => {
+        const name = token.name.toLowerCase();
 
-        if (!token) {
-            continue;
-        }
+        return name === 'br' || (!!options.lazy && HTMLNonRenderedTags.includes(name));
+    };
 
-        switch (token.type) {
-            case TokenType.OPEN: {
-                const lastChild : Token | undefined = token.children[token.children.length - 1];
+    return walkTokens({
+        tokens,
+        handlers,
+        options,
+    }, {
+        resolve: (token) => (isIntrinsic(token) ? [] : handlers.match(token)),
+        output: 'bbcode',
+        lineBreak: '\n',
+        breakEmptyBlock: false,
+        renderText: (value) => value,
+        renderUnmatched: ({
+            token,
+            content,
+            options: walkOptions,
+        }) => {
+            const name = token.name.toLowerCase();
 
-                const handler = findHandlerForHTMLToken(context.handlers, token);
-                let content = convertHTMLToBBCode({
-                    tokens: [...token.children],
-                    options: {
-                        ...context.options,
-                        isRoot: false,
-                    },
-                    handlers: context.handlers,
-                });
-
-                if (handler && handler.bbcode) {
-                    const lastChildHandler = findHandlerForHTMLToken(context.handlers, lastChild);
-
-                    if (
-                        lastChildHandler &&
-                        !isInline(handler) &&
-                        isInline(lastChildHandler) &&
-                        !handler.skipLastLineBreak
-                    ) {
-                        // Add placeholder br to end of block level
-                        // elements
-                        content += '\n';
-                    }
-
-                    if (typeof handler.bbcode !== 'function') {
-                        token.attrs['0'] = content;
-                        output += formatString(handler.bbcode, token.attrs);
-                    } else {
-                        output += handler.bbcode({
-                            handlers: context.handlers,
-                            token,
-                            attributes: token.attrs,
-                            content,
-                            options: context.options,
-                        });
-                    }
-                } else if (!context.options.lazy) {
-                    output += token.value + content + (token.closing ? token.closing.value : '');
-                }
-
-                break;
+            if (name === 'br') {
+                return '\n';
             }
-            /* istanbul ignore next */
-            case TokenType.NEWLINE: {
-                if (!context.options.isRoot) {
-                    output += '\n';
 
-
-                    continue;
-                }
-
-                output += '\n';
-
-                if (!context.tokens.length) {
-                    output += '\n';
-                }
-
-                break;
+            if (!walkOptions.lazy) {
+                return token.value + content + (token.closing ? token.closing.value : '');
             }
-            default: {
-                output += escapeCharacters(token.value, true);
 
-                break;
+            if (HTMLNonRenderedTags.includes(name)) {
+                return '';
             }
-        }
-    }
 
-    return output;
+            // Unmatched elements are transparent; block level elements
+            // still separate their content from what follows.
+            return {
+                content,
+                breakBefore: isBlock(token),
+                breakAfter: isSeparated(token, content),
+                transparent: true,
+            };
+        },
+        finishMatched: ({
+            token,
+            content,
+            matches,
+        }) => {
+            // The bbcode parser swallows one line break after such a tag.
+            if (handlers.breaks(matches[0], 'after', breakOptions)) {
+                return { content, breakAfter: true };
+            }
+
+            // An element rendered only by attribute handlers keeps
+            // the separation of its own block level.
+            const tagMatched = matches.some((handler) => isTagMatch(handler, token));
+
+            return {
+                content,
+                breakBefore: !tagMatched && isBlock(token),
+                breakAfter: !tagMatched && isSeparated(token, content),
+            };
+        },
+    });
 }

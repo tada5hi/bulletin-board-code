@@ -14,14 +14,6 @@ export default defineConfig({
             include: [
                 'src/**/*.{ts,tsx,js,jsx}',
             ],
-            exclude: [
-                'src/handler/utils/color.ts',
-                'src/handler/utils/dom.ts',
-                'src/handler/utils/escape.ts',
-                'src/parser/utils/bbcode-cleanup.ts',
-                'src/token/utils/nesting.ts',
-                'src/token/utils/parse.ts',
-            ],
             thresholds: {
                 branches: 65,
                 functions: 80,

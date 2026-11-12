@@ -9,16 +9,35 @@ import type { QuoteType } from '../constants';
 import type { Handler, Handlers } from '../handler';
 import type { Token } from '../token';
 
-// Retain the published interface name for declaration merging.
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export interface ParserInterface {
-    parseBBCode(input: string, preserveNewLines: boolean) : Token[],
+export interface IParser {
+    readonly handlers: Handlers;
 
-    toHTML(input: string, preserveNewLines: boolean) : string;
-    fromBBCode(input: string, preserveNewLines: boolean) : string;
+    setHandler(items: Record<string, Handler>) : void;
+    setHandler(id: string, handler: Handler) : void;
+    unsetHandler(id: string | string[]) : void;
 
-    cleanupBBCode(input: string, preserveNewLines: boolean) : string;
+    parseBBCode(input: string, options?: BBCodeParseOptions) : Token[];
+    parseHTML(input: string) : Token[];
+
+    toHTML(input: string, options?: BBCodeParseOptions) : string;
+
+    cleanupBBCode(input: string, options?: BBCodeParseOptions) : string;
+
+    toBBCode(input: string) : string;
 }
+
+/**
+ * Per-call options of parseBBCode, toHTML and cleanupBBCode.
+ */
+export type BBCodeParseOptions = {
+    /**
+     * Keep newlines before tags and at the start and end of their content;
+     * only the newline after a block tag is treated as formatting.
+     *
+     * default: false
+     */
+    preserveNewLines?: boolean
+};
 
 export type ParserOptions = {
     /**
@@ -94,9 +113,3 @@ export type ParserOptions = {
 };
 
 export type ParserOptionsInput = Partial<ParserOptions>;
-
-export type BBCodeCleanupContext = {
-    tokens: Token[],
-    options: ParserOptions,
-    handlers: Handlers
-};

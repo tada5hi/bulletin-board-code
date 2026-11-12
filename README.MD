@@ -17,7 +17,7 @@ Convert stored forum markup to HTML and edited HTML back to BBCode with one conf
 
 | Concern | Without it | With it |
 |---|---|---|
-| Two formats | Maintain separate tag replacements | Use Parser.toHTML and Parser.toBBCode |
+| Two formats | Maintain separate tag replacements | Use bbcodeToHTML and htmlToBBCode |
 | Nested markup | Repair nesting with string replacements | Tokenize, normalize and convert a token tree |
 | Custom tags | Change both converters separately | Register both representations in one Handler |
 
@@ -33,11 +33,13 @@ Parser tokenizes BBCode, normalizes nesting and empty tags, then renders each su
 - [Usage](#usage)
   - [BBCode to HTML](#bbcode-to-html)
   - [HTML to BBCode](#html-to-bbcode)
+  - [Parser](#parser)
 - [Handlers](#handlers)
   - [Set](#set)
   - [Unset](#unset)
 - [Options](#options)
   - [ParserOptions](#parseroptions)
+  - [BBCodeParseOptions](#bbcodeparseoptions)
 - [API](#api)
 - [Notes](#notes)
 - [Contributing](#contributing)
@@ -63,30 +65,59 @@ The [predefined handlers](src/handler/constants.ts) show supported tags and matc
 ## Usage
 
 ```typescript
-import { Parser } from 'bulletin-board-code';
+import { bbcodeToHTML, htmlToBBCode } from 'bulletin-board-code';
 
-const parser = new Parser();
-console.log(parser.toHTML('[b]Hello[/b]')); // <strong>Hello</strong>
-console.log(parser.toBBCode('<strong>Hello</strong>')); // [b]Hello[/b]
+console.log(bbcodeToHTML('[b]Hello[/b]')); // <strong>Hello</strong>
+console.log(htmlToBBCode('<strong>Hello</strong>')); // [b]Hello[/b]
 ```
 
 ### BBCode to HTML
 
-```typescript
-import { Parser } from 'bulletin-board-code';
+`bbcodeToHTML(input, options)` accepts the [parser options](#parseroptions) plus the per-call [`preserveNewLines`](#bbcodeparseoptions) option.
 
-const parser = new Parser();
-console.log(parser.toHTML('[b]foo[/b]')); // <strong>foo</strong>
+```typescript
+import { bbcodeToHTML } from 'bulletin-board-code';
+
+console.log(bbcodeToHTML('[b]foo[/b]')); // <strong>foo</strong>
+console.log(bbcodeToHTML('[x]foo[/x]', { lazyTransformation: false })); // [x]foo[/x]
 ```
 
 ### HTML to BBCode
 
+`htmlToBBCode(input, options)` accepts the [parser options](#parseroptions).
+
+```typescript
+import { htmlToBBCode } from 'bulletin-board-code';
+
+console.log(htmlToBBCode('<strong>foo</strong>')); // [b]foo[/b]
+```
+
+### Parser
+
+Each call of `bbcodeToHTML` or `htmlToBBCode` builds a `Parser` for its options. Construct a `Parser` once to reuse the options and the handler registry across calls.
+
 ```typescript
 import { Parser } from 'bulletin-board-code';
 
-const parser = new Parser();
+const parser = new Parser({ lazyTransformation: false });
+console.log(parser.toHTML('[b]foo[/b]')); // <strong>foo</strong>
 console.log(parser.toBBCode('<strong>foo</strong>')); // [b]foo[/b]
 ```
+
+`Parser` implements `IParser` and provides:
+
+| Member | Purpose |
+|---|---|
+| `toHTML(input, options?)` | Convert BBCode to HTML |
+| `toBBCode(input)` | Convert HTML to BBCode |
+| `parseBBCode(input, options?)` | Parse BBCode into a token tree |
+| `parseHTML(input)` | Parse HTML into a token tree, collapsing source whitespace |
+| `cleanupBBCode(input, options?)` | Normalize BBCode without converting it to HTML |
+| `setHandler(name, handler)`, `setHandler(record)` | Add or replace handlers |
+| `unsetHandler(name)` | Remove handlers by name or array of names |
+| `handlers` | The read-only reference to the parser's `Handlers` registry |
+
+The `options` argument of `toHTML`, `parseBBCode` and `cleanupBBCode` is a [`BBCodeParseOptions`](#bbcodeparseoptions) object.
 
 ## Handlers
 
@@ -109,7 +140,7 @@ console.log(parser.toHTML('[mark]Read this[/mark]')); // <mark>Read this</mark>
 
 ### Set
 
-A handler specifies both output representations and the HTML conditions used to recognize a tag. Use a template with `{0}` for content, or a function receiving the token, attributes, content, options and handler registry. Custom handlers are added to the presets; registering an existing name replaces it.
+A handler specifies both output representations and the HTML conditions used to recognize a tag. Use a template with `{0}` for content, or a function receiving the token, attributes, converted content, options, handler registry and a `convert(tokens)` function. `convert` renders tokens as the content of the current handler: in the current direction, with the handlers nested inside the current one (such as attribute matches) and the block line break applied. Custom handlers are added to the presets; registering an existing name replaces it.
 
 This handler matches a `span` with a `lazy` attribute. A `null` attribute condition checks presence without constraining its value.
 
@@ -126,9 +157,11 @@ console.log(parser.toHTML('[lazy]foo[/lazy]')); // <span lazy="true">foo</span>
 console.log(parser.toBBCode('<span lazy="true">foo</span>')); // [lazy]foo[/lazy]
 ```
 
+An HTML element can match several handlers. Block level handlers wrap inline ones; within each group the tag match is applied outermost and every attribute-only match is nested inside it. So `<strong style="font-style: italic">x</strong>` becomes `[b][i]x[/i][/b]` and `<div style="text-align: center; color: red">x</div>` becomes `[center][color=red]x[/color][/center]`. A `class` condition accepts a string or an array of class names.
+
 ### Unset
 
-`unsetHandler` is a parser method, not a standalone package export. When retaining unsupported markup is important, construct the parser with `lazyTransformation: false`; the default lazy mode omits unmatched opening-token branches.
+`unsetHandler` is a parser method, not a standalone package export. When retaining unsupported markup is important, construct the parser with `lazyTransformation: false`. BBCode tags without a registered handler stay literal text. In the default lazy mode, HTML to BBCode keeps the content of unmatched elements and drops only the element itself; script-like elements such as `script` and `style` are dropped with their content.
 
 ```typescript
 import { Parser } from 'bulletin-board-code';
@@ -144,22 +177,40 @@ console.log(parser.toBBCode('<h1>foo</h1>')); // <h1>foo</h1>
 
 ### ParserOptions
 
-Pass a partial `ParserOptions` to `new Parser(options)`. The [type declaration](src/parser/types.ts) defines the complete input contract; all options and defaults are listed below.
+Pass a partial `ParserOptions` (`ParserOptionsInput`) to `new Parser(options)`, `bbcodeToHTML(input, options)` or `htmlToBBCode(input, options)`. The [type declaration](src/parser/types.ts) defines the complete input contract; all options and defaults are listed below.
 
 | Option | Default | Purpose |
 |---|---|---|
 | `handlers` | `{}` | Add or replace preset handlers |
-| `breakBeforeBlock` | `false` | Add a newline before block elements |
-| `breakStartBlock` | `false` | Add a newline after a block opening tag |
-| `breakEndBlock` | `false` | Add a newline before a block closing tag |
-| `breakAfterBlock` | `true` | Add a break after block elements |
+| `breakBeforeBlock` | `false` | Newline before block tags |
+| `breakStartBlock` | `false` | Newline after a block opening tag |
+| `breakEndBlock` | `false` | Newline before a block closing tag |
+| `breakAfterBlock` | `true` | Newline after block tags |
 | `removeEmptyTags` | `true` | Remove empty tags unless their handler allows them |
 | `fixInvalidNesting` | `true` | Repair block elements nested inside inline elements |
 | `fixInvalidChildren` | `true` | Repair children not permitted by their parent handler |
 | `quoteType` | `QuoteType.auto` | Quote BBCode attributes when needed |
-| `lazyTransformation` | `true` | Omit unmatched opening-token branches during conversion |
+| `lazyTransformation` | `true` | Drop unmatched tags during conversion instead of reconstructing their markup |
 
-`parseBBCode()` and `parseHTML()` expose tokens; `cleanupBBCode()` normalizes BBCode without converting to HTML. `fromBBCode()` aliases `toHTML()` and `fromHTML()` aliases `toBBCode()`.
+The `break*Block` options apply to block level handlers; a handler's own `breakBefore`, `breakStart`, `breakEnd` or `breakAfter` flag takes precedence. When an option is on, parsing treats one newline at that position as formatting and drops it, and `cleanupBBCode()` writes it. With the defaults, `[quote]foo[/quote]\nbar` renders as `<blockquote>foo</blockquote>bar`, and `toBBCode()` writes that newline back after an element whose outermost handler breaks after it, when output follows.
+
+`parseBBCode()` and `parseHTML()` expose tokens; `parseHTML()` collapses HTML source whitespace the way a browser lays it out, while `tokenizeHTML()` keeps it raw; `cleanupBBCode()` normalizes BBCode without converting to HTML.
+
+### BBCodeParseOptions
+
+`toHTML`, `parseBBCode` and `cleanupBBCode` take a `BBCodeParseOptions` object as second argument; `bbcodeToHTML` accepts the same field next to the parser options.
+
+| Option | Default | Purpose |
+|---|---|---|
+| `preserveNewLines` | `false` | Keep newlines before tags and at the start and end of their content; only the newline after a block tag is treated as formatting |
+
+```typescript
+import { Parser } from 'bulletin-board-code';
+
+const parser = new Parser({ breakBeforeBlock: true });
+console.log(parser.toHTML('x\n[quote]a[/quote]')); // x<blockquote>a</blockquote>
+console.log(parser.toHTML('x\n[quote]a[/quote]', { preserveNewLines: true })); // x<br /><blockquote>a</blockquote>
+```
 
 ## API
 
@@ -169,45 +220,35 @@ All names below are exported from `bulletin-board-code`. Types have no runtime v
 |---|---|---|
 | `QuoteType` | enum | Attribute quoting modes |
 | `HandlerPreset` | constant | Built-in tag definitions |
-| `Attribute` | type | Type contract for attribute |
-| `Condition` | type | Type contract for condition |
-| `ConverterContext` | type | Type contract for converter context |
-| `Handler` | type | Type contract for handler |
-| `Handlers` | class | Manage the preset and custom tag registry |
-| `convertBBCodeToHTML` | function | Render BBCode tokens as HTML; consumes the input array |
-| `convertHTMLToBBCode` | function | Render HTML tokens as BBCode; consumes the input array |
-| `ConverterOptions` | type | Type contract for converter options |
-| `BBCodeToHTMLConvertContext` | type | Type contract for bbcode to htmlconvert context |
-| `HTMLToBBCodeConvertContext` | type | Type contract for htmlto bbcode convert context |
+| `Attribute` | type | Attribute match condition (`style`, `class`, any attribute) |
+| `Condition` | type | HTML match condition of a handler |
+| `ConverterContext` | type | Argument of handler render functions, including `convert(tokens)` |
+| `ConverterOptions` | type | Converter settings (`lazy` and the four `break*Block` options; unset break options use the parser defaults) |
+| `Handler` | type | Tag definition |
+| `Handlers` | class | Handler registry: `get`, `set`, `unset`, `has`, `isInline`, `isHtmlInline`, `breaks`, `match` |
+| `convertBBCodeToHTML` | function | `(tokens, handlers, options?)`: render BBCode tokens as HTML; leaves the input tokens unchanged |
+| `convertHTMLToBBCode` | function | `(tokens, handlers, options?)`: render HTML tokens as BBCode; leaves the input tokens unchanged |
+| `bbcodeToHTML` | function | Convert a BBCode string to HTML with a `Parser` for the given options |
+| `htmlToBBCode` | function | Convert an HTML string to BBCode with a `Parser` for the given options |
+| `BBCodeParseOptions` | type | Per-call options of `toHTML`, `parseBBCode` and `cleanupBBCode` (`preserveNewLines`) |
 | `ParserDefaultOptions` | constant | Default parser settings |
 | `Parser` | class | Parse, normalize and convert BBCode or HTML |
-| `ParserInterface` | interface | Type contract for parser interface |
-| `ParserOptions` | type | Type contract for parser options |
-| `ParserOptionsInput` | type | Type contract for parser options input |
-| `BBCodeCleanupContext` | type | Type contract for bbcode cleanup context |
+| `IParser` | interface | Public members of `Parser` |
+| `ParserOptions` | type | Complete parser settings |
+| `ParserOptionsInput` | type | Partial parser settings accepted by `new Parser()`, `bbcodeToHTML` and `htmlToBBCode` |
 | `TokenType` | enum | Token categories |
-| `Token` | class | Mutable token tree node |
-| `tokenizeAttrs` | function | Parse BBCode attribute text |
-| `tokenizeTag` | function | Parse a BBCode opening or closing tag |
+| `Token` | class | Token tree node |
 | `tokenizeBBCode` | function | Tokenize BBCode with a handler registry |
 | `tokenizeHTML` | function | Tokenize HTML with node-html-parser |
-| `TokenAttributes` | type | Type contract for token attributes |
-| `TokenParseContext` | type | Type contract for token parse context |
-| `ChildAllowedCheckContext` | type | Type contract for child allowed check context |
-| `NestingTokenFixContext` | type | Type contract for nesting token fix context |
-| `TokenNewLinesNormaliseContext` | type | Type contract for token new lines normalise context |
-| `removeEmptyTokens` | function | Remove empty tokens using handler rules |
-| `hasToken` | function | Find a matching token name and category |
-| `fixNestingTokens` | function | Repair invalid nesting in a token tree |
-| `normalizeTokenNewLines` | function | Normalize token line breaks |
-| `isChildAllowed` | function | Check handler parent/child constraints |
-| `parseTokens` | function | Build nested tokens from a token sequence |
+| `TokenAttributes` | type | Token attribute record |
+
+`Handlers.has(name)` checks registration. `isInline(handler)` and `isHtmlInline(handler)` report the BBCode and HTML block level; unknown tags are inline. `breaks(handler, position, options)` tells whether a newline belongs `before`, at the `start`, at the `end` or `after` a tag. `match(token)` returns the handlers for an HTML token, block level handlers before inline ones and the tag match first within each group.
 
 ## Notes
 
-- **Conversion is not a lossless round trip.** Tags, nesting, whitespace and empty elements can be normalized. Unsupported opening tags and their contents are omitted by the converters when `lazyTransformation` is true; set it to false to reconstruct unmatched markup.
+- **Conversion is not a lossless round trip.** Tags, nesting, whitespace and empty elements can be normalized. HTML to BBCode collapses source whitespace like a browser: whitespace runs become one space, and whitespace at the edges of block elements, next to `<br>` and at the start and end of the input is removed; text inside `pre`, `textarea` and `code` stays as written. BBCode rendered to HTML converts back to BBCode that renders the same HTML for line structure, block tags and inline tags. BBCode tags without a handler stay literal text. `<br>` always becomes a newline, whatever handlers its attributes match. With `lazyTransformation` true, unmatched HTML elements are dropped while their content is kept, and block elements such as `div` or `p` separate their content from what follows with one newline, as do block elements whose handlers matched only through attribute conditions such as `style`; the separation also applies when the block is the last child of an unmatched element, and is only written when output follows. `script`, `style`, `noscript`, `template`, `title` and `head` elements are dropped together with their content, whatever handlers their attributes match. HTML to BBCode emits text decoded, not HTML-escaped. Set `lazyTransformation` to false to reconstruct unmatched markup.
+- **Rejected URLs render as text.** `[url]`, `[img]` and `[email]` accept URLs without a scheme and the schemes `http`, `https`, `ftp`, `sftp`, `mailto`, `tel`, `ssh`, `spotify`, `skype`, `teamspeak`, plus PNG, BMP, GIF and JPEG `data:image/` URLs; any other scheme renders the whole tag as literal, escaped text. `[size]`, `[font]` and `[color]` values that are not a single plain CSS value (empty, or containing `;`, `:`, `{`, `}`, `\`, `/`, `url(` or `expression(`) render the whole tag as literal, escaped text as well.
 - **Conversion is not an HTML security boundary.** Review the generated HTML and custom handlers under your application's sanitization policy before rendering untrusted input.
-- **Low-level converters consume arrays.** `convertBBCodeToHTML` and `convertHTMLToBBCode` shift tokens from the supplied arrays; pass copies if you need the arrays again.
 
 ## Contributing
 

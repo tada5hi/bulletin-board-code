@@ -10,3 +10,4 @@ export * from './escape';
 export * from './has-own-property';
 export * from './object';
 export * from './string';
+export * from './url';

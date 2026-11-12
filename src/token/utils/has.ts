@@ -7,10 +7,10 @@
 import type { TokenType } from '../constants';
 import type { Token } from '../module';
 
-export function hasToken(arr: Token[], name: string, type: `${TokenType}`) {
+export function hasToken(arr: Token[], name: string, type: `${TokenType}`, start = 0) {
     let i = arr.length;
 
-    while (i--) {
+    while (i-- > start) {
         if (arr[i].type === type && arr[i].name === name) {
             return true;
         }

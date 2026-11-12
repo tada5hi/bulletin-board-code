@@ -7,7 +7,7 @@
 
 import { TokenType } from '../constants';
 import type { Token } from '../module';
-import type { ChildAllowedCheckContext, TokenParseContext } from '../types';
+import type { ChildAllowedCheckContext, TokenParseContext } from './types';
 import { hasToken } from './has';
 import type { Handler } from '../../handler';
 import { lastArrayElement } from '../../utils';
@@ -33,6 +33,9 @@ export function parseTokens(context: TokenParseContext) {
     let clone : Token;
     let i;
     let next;
+    let position = 0;
+
+    const { items } = context;
 
     const cloned : Token[] = [];
     const output : Token[] = [];
@@ -66,8 +69,9 @@ export function parseTokens(context: TokenParseContext) {
     };
 
 
-    while ((token = context.items.shift())) {
-        next = context.items[0];
+    // Walk the items by position, so the caller's array stays untouched.
+    while ((token = items[position++])) {
+        next = items[position];
 
         /*
          * Fixes any invalid children.
@@ -118,7 +122,7 @@ export function parseTokens(context: TokenParseContext) {
                     !handler.isSelfClosing &&
                     (
                         handler.closedBy ||
-                        hasToken(context.items, token.name, TokenType.CLOSE)
+                        hasToken(items, token.name, TokenType.CLOSE, position)
                     )
                 ) {
                     openTags.push(token);
@@ -178,11 +182,9 @@ export function parseTokens(context: TokenParseContext) {
 
                     // Place block linebreak before cloned tags
                     if (next && next.type === TokenType.NEWLINE) {
-                        handler = context.handlers.get(token.name);
-
-                        if (handler && handler.isInline === false) {
+                        if (!context.handlers.isInline(token.name)) {
                             addTag(next);
-                            context.items.shift();
+                            position++;
                         }
                     }
 
@@ -228,9 +230,7 @@ export function parseTokens(context: TokenParseContext) {
                     // skip if the next tag is the closing tag for
                     // the option tag, i.e. [/*]
                     if (!(next.type === TokenType.CLOSE && next.name === curr.name)) {
-                        handler = context.handlers.get(curr.name);
-
-                        if (handler && (handler.breakAfter || (handler.isInline === false && handler.breakAfter !== false))) {
+                        if (context.handlers.breaks(curr.name, 'after', context.options)) {
                             openTags.pop();
                         }
                     }

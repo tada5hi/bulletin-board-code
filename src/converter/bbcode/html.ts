@@ -5,116 +5,48 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
+import type { ConverterOptions, Handlers } from '../../handler';
 import type { Token } from '../../token';
-import { TokenType } from '../../token';
-import type { Handler } from '../../handler';
-import { escapeCharacters, formatString } from '../../utils';
-import type { BBCodeToHTMLConvertContext } from '../types';
+import { escapeCharacters } from '../../utils';
+import { walkTokens } from '../walk';
 
-export function convertBBCodeToHTML(context: BBCodeToHTMLConvertContext) {
-    let bbcode : Handler | undefined;
-    let content : string;
-    let html : string;
-    let ret = '';
+/**
+ * Render bbcode tokens as html; the input tokens are not mutated.
+ *
+ * @param tokens
+ * @param handlers
+ * @param options
+ */
+export function convertBBCodeToHTML(
+    tokens: Token[],
+    handlers: Handlers,
+    options?: ConverterOptions,
+) : string {
+    return walkTokens({
+        tokens,
+        handlers,
+        options,
+    }, {
+        resolve: (token) => {
+            const handler = handlers.get(token.name);
 
-    const isInline = (handler: Handler) : boolean => typeof handler === 'undefined' || (
-        typeof handler.isHtmlInline !== 'undefined' ?
-            handler.isHtmlInline :
-            handler.isInline
-    ) !== false;
-
-    while (context.tokens.length > 0) {
-        const token = context.tokens.shift();
-
-        if (!token) {
-            continue;
-        }
-
-        html = '';
-
-        switch (token.type) {
-            case TokenType.OPEN: {
-                const lastChild = token.children[token.children.length - 1] || {} as Token;
-
-                bbcode = context.handlers.get(token.name);
-                content = convertBBCodeToHTML({
-                    tokens: [...token.children],
-                    options: {
-                        ...context.options,
-                        isRoot: false,
-                    },
-                    handlers: context.handlers,
-                });
-
-                if (bbcode && bbcode.html) {
-                    const lastChildHandler = context.handlers.get(lastChild.name);
-
-                    // Only add a line break to the end if this is
-                    // blocklevel and the last child wasn't block-level
-                    if (
-                        lastChildHandler &&
-                        !isInline(bbcode) &&
-                        isInline(lastChildHandler) &&
-                        !bbcode.skipLastLineBreak
-                    ) {
-                        // Add placeholder br to end of block level
-                        // elements
-                        content += '<br />';
-                    }
-
-                    if (typeof bbcode.html !== 'function') {
-                        token.attrs['0'] = content;
-                        html = formatString(
-                            bbcode.html,
-                            token.attrs,
-                        );
-                    } else {
-                        html = bbcode.html({
-                            handlers: context.handlers,
-                            token,
-                            attributes: token.attrs,
-                            content,
-                            options: context.options,
-                        });
-                    }
-                } else if (!context.options.lazy) {
-                    html = token.value + content + (token.closing ? token.closing.value : '');
-                }
-
-                break;
+            return handler ? [handler] : [];
+        },
+        output: 'html',
+        lineBreak: '<br />',
+        // Add a placeholder br to empty block level elements as well.
+        breakEmptyBlock: true,
+        renderText: (value) => escapeCharacters(value, true),
+        renderUnmatched: ({
+            token,
+            content,
+            options,
+        }) => {
+            if (options.lazy) {
+                return '';
             }
-            /* istanbul ignore next */
-            case TokenType.NEWLINE: {
-                if (!context.options.isRoot) {
-                    ret += '<br />';
 
-
-                    continue;
-                }
-
-                ret += '<br />';
-
-                // Normally the div acts as a line-break with by moving
-                // whatever comes after onto a new line.
-                // If this is the last token, add an extra line-break so it
-                // shows as there will be nothing after it.
-                if (!context.tokens.length) {
-                    ret += '<br />';
-                }
-
-                ret += '</div>\n';
-
-                continue;
-            }
-            default: {
-                html = escapeCharacters(token.value, true);
-
-                break;
-            }
-        }
-
-        ret += html;
-    }
-
-    return ret;
+            return token.value + content + (token.closing ? token.closing.value : '');
+        },
+    });
 }

@@ -7,6 +7,7 @@
 
 import type { ParserOptions } from './types';
 import { QuoteType } from '../constants';
+import { TokenBreakDefaultOptions } from '../token/pipeline/constants';
 
 export const ParserDefaultOptions : ParserOptions = {
     /**
@@ -21,28 +22,28 @@ export const ParserDefaultOptions : ParserOptions = {
      *
      * @type {Boolean}
      */
-    breakBeforeBlock: false,
+    breakBeforeBlock: TokenBreakDefaultOptions.breakBeforeBlock,
 
     /**
      * If to add a new line after the start of block level elements
      *
      * @type {Boolean}
      */
-    breakStartBlock: false,
+    breakStartBlock: TokenBreakDefaultOptions.breakStartBlock,
 
     /**
      * If to add a new line before the end of block level elements
      *
      * @type {Boolean}
      */
-    breakEndBlock: false,
+    breakEndBlock: TokenBreakDefaultOptions.breakEndBlock,
 
     /**
      * If to add a new line after block level elements
      *
      * @type {Boolean}
      */
-    breakAfterBlock: true,
+    breakAfterBlock: TokenBreakDefaultOptions.breakAfterBlock,
 
     /**
      * If to remove empty tags

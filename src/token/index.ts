@@ -9,4 +9,3 @@ export * from './constants';
 export * from './module';
 export * from './tokenize';
 export * from './types';
-export * from './utils';
