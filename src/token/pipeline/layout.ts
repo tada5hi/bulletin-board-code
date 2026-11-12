@@ -99,17 +99,12 @@ export function matchBBCodeHandlers(handlers: Handlers, token: Token) : Handler[
  * a structural element, an element whose outermost handler
  * is not HTML inline, or a block level element without a
  * tag matched handler (unmatched or attribute handlers only).
- * A non rendered element is never a block.
  *
  * @param handlers
  * @param token
  */
 export function isHTMLLayoutBlock(handlers: Handlers, token: Token) : boolean {
     const name = token.name.toLowerCase();
-
-    if (HTMLNonRenderedTags.includes(name)) {
-        return false;
-    }
 
     if (HTMLStructuralTags.includes(name)) {
         return true;

@@ -78,6 +78,7 @@ export class Parser implements IParser {
         return parseHTMLTokens({
             input,
             handlers: this.handlers,
+            lazy: this.options.lazyTransformation,
         });
     }
 

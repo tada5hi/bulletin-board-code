@@ -198,6 +198,8 @@ describe('html to bbcode: element rules before attribute handlers', () => {
         const strict = new Parser({ lazyTransformation: false });
 
         expect(strict.toBBCode('<script>a\n  b</script>')).toEqual('<script>a\n  b</script>');
+        expect(strict.toBBCode('one <script style="color:red">x</script> two')).toEqual('one [color=red]x[/color] two');
+        expect(strict.toBBCode('one <script>x</script> two')).toEqual('one <script>x</script> two');
     });
 
     it('should separate a block from the text before it', () => {

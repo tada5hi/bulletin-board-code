@@ -32,52 +32,6 @@ function isPreserved(handlers: Handlers, token: Token) : boolean {
     return !!code && handlers.match(token).includes(code);
 }
 
-/**
- * Check if whitespace next to a token is removed:
- * block level elements and line breaks.
- *
- * @param handlers
- * @param token
- */
-function isBoundary(handlers: Handlers, token: Token) : boolean {
-    if (token.type === TokenType.NEWLINE) {
-        return true;
-    }
-
-    if (token.type !== TokenType.OPEN) {
-        return false;
-    }
-
-    return token.name.toLowerCase() === 'br' || isHTMLLayoutBlock(handlers, token);
-}
-
-/**
- * Check if a token is an element which takes no part in the layout.
- *
- * @param token
- */
-function isNonRendered(token: Token) : boolean {
-    return token.type === TokenType.OPEN &&
-        HTMLNonRenderedTags.includes(token.name.toLowerCase());
-}
-
-/**
- * Find the closest token which takes part in the layout.
- *
- * @param tokens
- * @param index
- * @param step
- */
-function findRendered(tokens: Token[], index: number, step: 1 | -1) : Token | undefined {
-    let i = index;
-
-    while (tokens[i] && isNonRendered(tokens[i])) {
-        i += step;
-    }
-
-    return tokens[i];
-}
-
 type WhitespaceFrame = {
     children: Token[],
     block: boolean
@@ -89,8 +43,42 @@ type WhitespaceFrame = {
  *
  * @param tokens
  * @param handlers
+ * @param lazy
  */
-export function normalizeHTMLWhitespace(tokens: Token[], handlers: Handlers) : void {
+export function normalizeHTMLWhitespace(tokens: Token[], handlers: Handlers, lazy = true) : void {
+    // In lazy mode, elements which are not rendered are dropped
+    // by the converter and take no part in the layout.
+    const isDropped = (token: Token) : boolean => lazy &&
+        token.type === TokenType.OPEN &&
+        HTMLNonRenderedTags.includes(token.name.toLowerCase());
+
+    const isBlock = (token: Token) : boolean => !isDropped(token) &&
+        isHTMLLayoutBlock(handlers, token);
+
+    // Whitespace next to block level elements and line breaks is removed.
+    const isBoundary = (token: Token) : boolean => {
+        if (token.type === TokenType.NEWLINE) {
+            return true;
+        }
+
+        if (token.type !== TokenType.OPEN) {
+            return false;
+        }
+
+        return token.name.toLowerCase() === 'br' || isBlock(token);
+    };
+
+    // Find the closest token which takes part in the layout.
+    const findRendered = (items: Token[], index: number, step: 1 | -1) : Token | undefined => {
+        let i = index;
+
+        while (items[i] && isDropped(items[i])) {
+            i += step;
+        }
+
+        return items[i];
+    };
+
     const stack : WhitespaceFrame[] = [{ children: tokens, block: true }];
 
     while (stack.length > 0) {
@@ -104,7 +92,7 @@ export function normalizeHTMLWhitespace(tokens: Token[], handlers: Handlers) : v
                 if (!isPreserved(handlers, token)) {
                     stack.push({
                         children: token.children,
-                        block: isHTMLLayoutBlock(handlers, token),
+                        block: isBlock(token),
                     });
                 }
 
@@ -125,7 +113,7 @@ export function normalizeHTMLWhitespace(tokens: Token[], handlers: Handlers) : v
 
             if (
                 previous ?
-                    isBoundary(handlers, previous) ||
+                    isBoundary(previous) ||
                     (previous.type === TokenType.CONTENT && previous.value.endsWith(' ')) :
                     block
             ) {
@@ -134,7 +122,7 @@ export function normalizeHTMLWhitespace(tokens: Token[], handlers: Handlers) : v
 
             const next = findRendered(children, i + 1, 1);
 
-            if (next ? isBoundary(handlers, next) : block) {
+            if (next ? isBoundary(next) : block) {
                 value = value.replace(/ $/, '');
             }
 
@@ -157,7 +145,7 @@ export function normalizeHTMLWhitespace(tokens: Token[], handlers: Handlers) : v
 export function parseHTMLTokens(context: HTMLTokenPipelineContext) : Token[] {
     const tokens = tokenizeHTML(context.input);
 
-    normalizeHTMLWhitespace(tokens, context.handlers);
+    normalizeHTMLWhitespace(tokens, context.handlers, context.lazy);
 
     return tokens;
 }

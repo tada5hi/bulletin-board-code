@@ -31,5 +31,11 @@ export type TokenBreakDefaults = Pick<
 
 export type HTMLTokenPipelineContext = {
     input: string,
-    handlers: Handlers
+    handlers: Handlers,
+    /**
+     * If the converter drops elements which are not rendered.
+     *
+     * default: true
+     */
+    lazy?: boolean
 };
