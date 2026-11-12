@@ -6,6 +6,24 @@
 * attr regex in attr tokenization ([48823ad](https://github.com/tada5hi/bulletin-board-code/commit/48823ad2da1194494689dae631c405f66102d666))
 * **deps:** bump node-html-parser in the majorprod group ([#467](https://github.com/tada5hi/bulletin-board-code/issues/467)) ([6fa3f62](https://github.com/tada5hi/bulletin-board-code/commit/6fa3f62e8f4560da65366ba0388848cb151a2450))
 
+## [2.0.0](https://github.com/tada5hi/bulletin-board-code/compare/v1.0.3...v2.0.0) (2026-11-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* parseTokens, fixNestingTokens, normalizeTokenNewLines, removeEmptyTokens, tokenizeAttrs, tokenizeTag, isChildAllowed, hasToken and their context types are no longer exported; ConverterOptions.isRoot was removed; ConverterContext requires a convert function; Handler.strictMatch was removed; default output changes for line breaks after block tags, html elements matching several handlers, unknown html elements and rejected urls.
+
+### Features
+
+* deepen core modules, harden html output and simplify the api ([#524](https://github.com/tada5hi/bulletin-board-code/issues/524)) ([8b73b0a](https://github.com/tada5hi/bulletin-board-code/commit/8b73b0a5a8b42e7b34ce090f571d23400ea17243))
+
+
+### Bug Fixes
+
+* **deps:** bump node-html-parser ([#522](https://github.com/tada5hi/bulletin-board-code/issues/522)) ([0ad6acf](https://github.com/tada5hi/bulletin-board-code/commit/0ad6acff14c9db78778dc6c72793c6bf86efdf17))
+* **deps:** bump the minorandpatch group across 1 directory with 10 updates ([#498](https://github.com/tada5hi/bulletin-board-code/issues/498)) ([edfcf14](https://github.com/tada5hi/bulletin-board-code/commit/edfcf14afa2849f6c53aa5ab04c7183ec4edf950))
+* include readme image assets in package ([#518](https://github.com/tada5hi/bulletin-board-code/issues/518)) ([790a703](https://github.com/tada5hi/bulletin-board-code/commit/790a703151a4cec91f9b3c89a2d0373127e4bf9e))
+
 ## [1.0.2](https://github.com/tada5hi/bulletin-board-code/compare/v1.0.1...v1.0.2) (2024-04-16)
 
 
