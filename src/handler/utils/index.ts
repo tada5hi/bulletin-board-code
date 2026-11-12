@@ -9,3 +9,4 @@ export * from './color';
 export * from './common';
 export * from './extend';
 export * from './match';
+export * from './url';

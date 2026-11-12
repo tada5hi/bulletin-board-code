@@ -37,7 +37,7 @@ export function normaliseColor(input: string) : string {
         return `#${toHex(match[1])}${toHex(match[2])}${toHex(match[3])}`;
     }
 
-    match = input.match(/#([0-f])([0-f])([0-f])\s*?$/i);
+    match = input.match(/#([0-9a-f])([0-9a-f])([0-9a-f])\s*?$/i);
 
     // expand shorthand
     if (match) {

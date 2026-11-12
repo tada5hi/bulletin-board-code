@@ -30,30 +30,3 @@ export function escapeCharacters(str: string, noQuotes?: boolean) {
 
     return str;
 }
-
-const VALID_SCHEME_REGEX = /^(https?|s?ftp|mailto|spotify|skype|ssh|teamspeak|tel):|(\/\/)|data:image\/(png|bmp|gif|p?jpe?g);/i;
-
-export function escapeUriScheme(url: string) {
-    // If there is a : before a / then it has a scheme
-    const hasScheme = /^[^/]*:/i;
-
-    // Has no scheme or a valid scheme
-    if ((!url || !hasScheme.test(url)) || VALID_SCHEME_REGEX.test(url)) {
-        return url;
-    }
-
-    if (
-        typeof window !== 'undefined' &&
-        window.location
-    ) {
-        const { location } = window;
-
-        const path = location.pathname.split('/');
-
-        path.pop();
-
-        return `${location.protocol}//${location.host}${path.join('/')}/${url}`;
-    }
-
-    return url;
-}

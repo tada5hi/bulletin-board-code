@@ -14,9 +14,6 @@ export default defineConfig({
             include: [
                 'src/**/*.{ts,tsx,js,jsx}',
             ],
-            exclude: [
-                'src/handler/utils/color.ts',
-            ],
             thresholds: {
                 branches: 65,
                 functions: 80,

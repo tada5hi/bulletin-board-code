@@ -9,9 +9,11 @@ import type { Handler } from './types';
 import { QuoteType } from '../constants';
 import {
     normaliseColor,
+    renderLiteralTag,
+    renderUrlAttribute,
     stripQuotes,
 } from './utils';
-import { escapeCharacters, escapeUriScheme, getObjectPathValue } from '../utils';
+import { escapeCharacters, getObjectPathValue } from '../utils';
 
 export const HandlerPreset : Record<string, Handler> = {
     h1: {
@@ -324,7 +326,13 @@ export const HandlerPreset : Record<string, Handler> = {
                 attribs += ` height="${escapeCharacters(height, true)}"`;
             }
 
-            return `<img${attribs} src="${escapeUriScheme(context.content)}" />`;
+            const src = renderUrlAttribute(context.content, true);
+
+            if (typeof src === 'undefined') {
+                return renderLiteralTag(context);
+            }
+
+            return `<img${attribs} src="${src}" />`;
         },
     },
     // END_COMMAND
@@ -348,9 +356,15 @@ export const HandlerPreset : Record<string, Handler> = {
             return `[url=${url}]${context.content}[/url]`;
         },
         html(context) {
-            context.attributes.default = context.attributes.default ? escapeCharacters(context.attributes.default, true) : context.content;
+            const href = context.attributes.default ?
+                renderUrlAttribute(context.attributes.default, false) :
+                renderUrlAttribute(context.content, true);
 
-            return `<a href="${escapeUriScheme(context.attributes.default)}">${context.content}</a>`;
+            if (typeof href === 'undefined') {
+                return renderLiteralTag(context);
+            }
+
+            return `<a href="${href}">${context.content}</a>`;
         },
     },
     // END_COMMAND
@@ -359,7 +373,15 @@ export const HandlerPreset : Record<string, Handler> = {
     email: {
         quoteType: QuoteType.never,
         html(context) {
-            return `<a href="mailto:${context.attributes.default ? escapeCharacters(context.attributes.default, true) : context.content}">${context.content}</a>`;
+            const href = context.attributes.default ?
+                renderUrlAttribute(`mailto:${context.attributes.default}`, false) :
+                renderUrlAttribute(`mailto:${context.content}`, true);
+
+            if (typeof href === 'undefined') {
+                return renderLiteralTag(context);
+            }
+
+            return `<a href="${href}">${context.content}</a>`;
         },
     },
     // END_COMMAND
@@ -523,9 +545,14 @@ export const HandlerPreset : Record<string, Handler> = {
 
             return value ? `[youtube]${value}[/youtube]` : '';
         },
-        html: '<iframe width="560" height="315" ' +
-            'src="https://www.youtube-nocookie.com/embed/{0}?wmode=opaque" ' +
-            'data-youtube-id="{0}" allowfullscreen></iframe>',
+        html(context) {
+            // the scheme is fixed, so only the converted content needs its quotes escaped
+            const id = context.content.replace(/"/g, '&#34;');
+
+            return '<iframe width="560" height="315" ' +
+                `src="https://www.youtube-nocookie.com/embed/${id}?wmode=opaque" ` +
+                `data-youtube-id="${id}" allowfullscreen></iframe>`;
+        },
     },
     // END_COMMAND
 
