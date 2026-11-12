@@ -184,3 +184,62 @@ describe('html to bbcode: match order', () => {
         expect(parser.toBBCode('<strong style="text-align: center">x</strong>y')).toEqual('[center][b]x[/b][/center]\ny');
     });
 });
+
+describe('html to bbcode: element rules before attribute handlers', () => {
+    it('should render line breaks and dropped elements whatever their attributes', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<br style="color:red">')).toEqual('\n');
+        expect(parser.toBBCode('a<br style="font-weight:bold">b')).toEqual('a\nb');
+        expect(parser.toBBCode('<script style="color:red">alert(1)</script>')).toEqual('');
+        expect(parser.toBBCode('<style style="text-align: center">a{}</style>x')).toEqual('x');
+
+        const strict = new Parser({ lazyTransformation: false });
+
+        expect(strict.toBBCode('<br style="color:red">')).toEqual('\n');
+        expect(strict.toBBCode('<script>alert(1)</script>')).toEqual('<script>alert(1)</script>');
+        expect(strict.toBBCode('<script style="color:red">alert(1)</script>')).toEqual('[color=red]alert(1)[/color]');
+    });
+
+    it('should separate a block nested in transparent elements once', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<span><p>one</p></span>two')).toEqual('one\ntwo');
+        expect(parser.toBBCode('<span><p style="color:red">one</p></span>two')).toEqual('[color=red]one[/color]\ntwo');
+        expect(parser.toBBCode('<div><p>one</p></div>two')).toEqual('one\ntwo');
+        expect(parser.toBBCode('<div><div><p>one</p></div></div>two')).toEqual('one\ntwo');
+        expect(parser.toBBCode('<span><p>one</p></span>')).toEqual('one');
+        expect(parser.toBBCode('<div><p>one</p></div>')).toEqual('one');
+        expect(parser.toBBCode('<p>one</p><script>x</script>')).toEqual('one');
+        expect(parser.toBBCode('<p>one</p><p></p>')).toEqual('one');
+    });
+
+    it('should combine the separation with the break after blocks and whitespace', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<span><blockquote>a</blockquote></span>b')).toEqual('[quote]a[/quote]\nb');
+        expect(parser.toBBCode('<div><blockquote>a</blockquote></div>b')).toEqual('[quote]a[/quote]\nb');
+        expect(parser.toBBCode('<div>\n  <blockquote>a</blockquote>\n</div>\n<p>b</p>')).toEqual('[quote]a[/quote]\nb');
+        expect(parser.toBBCode('<div><blockquote>a</blockquote></div><br>b')).toEqual('[quote]a[/quote]\n\nb');
+        expect(parser.toBBCode('<div><blockquote>a</blockquote></div>')).toEqual('[quote]a[/quote]');
+        expect(parser.toBBCode('<div>\n  <p>one</p>\n</div>\n<p>two</p>\n')).toEqual('one\ntwo');
+        expect(parser.toBBCode('<p>a<br></p><p>b</p>')).toEqual('a\nb');
+
+        const html = parser.toHTML('[quote]a[/quote]\nb');
+
+        expect(parser.toHTML(parser.toBBCode(`<div>${html}</div>`))).toEqual(html);
+    });
+});
+
+describe('html to bbcode: quote author', () => {
+    it('should keep attribute wrappers of a quote with author', () => {
+        const parser = new Parser();
+
+        expect(parser.toBBCode('<blockquote style="color:red"><cite>A</cite>x</blockquote>'))
+            .toEqual('[quote=A][color=red]x[/color][/quote]');
+        expect(parser.toBBCode('<blockquote><cite>A</cite>x</blockquote>')).toEqual('[quote=A]x[/quote]');
+        expect(parser.toBBCode('<blockquote><cite>A</cite><strong>x</strong></blockquote>'))
+            .toEqual('[quote=A][b]x[/b]\n[/quote]');
+        expect(parser.toBBCode(parser.toHTML('[quote=A]x[/quote]'))).toEqual('[quote=A]x[/quote]');
+    });
+});

@@ -13,7 +13,7 @@ export type Attribute = {
     style?: {
         [T in keyof CSSStyleDeclaration]?: string | string[] | null
     },
-    class?: string | string[],
+    class?: string | string[] | null,
     [key: string]: any
 };
 
@@ -43,7 +43,13 @@ export type ConverterContext = {
     /**
      * Convert tokens in the direction of the current conversion.
      */
-    convert: (tokens: Token[]) => string
+    convert: (tokens: Token[]) => string,
+    /**
+     * Convert tokens as the content of the current handler:
+     * like convert, plus the handlers nested inside the current one
+     * (e.g. attribute matches) and the block line break.
+     */
+    convertContent: (tokens: Token[]) => string
 };
 
 export type Handler = {

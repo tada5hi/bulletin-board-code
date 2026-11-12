@@ -433,7 +433,8 @@ export const HandlerPreset : Record<string, Handler> = {
                     if (citeChild) {
                         author = citeChild.value.replace(/(^\s+|\s+$)/g, '');
 
-                        context.content = context.convert(context.token.children
+                        // Keep the wrappers of the handlers nested inside the quote.
+                        context.content = context.convertContent(context.token.children
                             .filter((_child, i) => i !== index));
                     }
                 }

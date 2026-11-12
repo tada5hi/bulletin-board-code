@@ -24,23 +24,15 @@ const droppedTags : string[] = [
 ];
 
 /**
- * Separate the output of a block level element from what follows.
+ * Check if a block level element separates its output from what follows.
  *
  * @param token
  * @param content
- * @param next
  */
-function separateBlock(token: Token, content: string, next: Token | undefined) : string {
-    if (
-        HTMLBlockTags.includes(token.name.toLowerCase()) &&
+function isSeparated(token: Token, content: string) : boolean {
+    return HTMLBlockTags.includes(token.name.toLowerCase()) &&
         content.length > 0 &&
-        !content.endsWith('\n') &&
-        next
-    ) {
-        return `${content}\n`;
-    }
-
-    return content;
+        !content.endsWith('\n');
 }
 
 export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) : string {
@@ -52,8 +44,16 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) : strin
         breakAfterBlock: options.breakAfterBlock ?? TokenBreakDefaultOptions.breakAfterBlock,
     };
 
+    // Line breaks and, in lazy mode, dropped elements follow their
+    // element rules whatever handlers their attributes match.
+    const isIntrinsic = (token: Token) : boolean => {
+        const name = token.name.toLowerCase();
+
+        return name === 'br' || (!!options.lazy && droppedTags.includes(name));
+    };
+
     return walkTokens(context, {
-        resolve: (token) => context.handlers.match(token),
+        resolve: (token) => (isIntrinsic(token) ? [] : context.handlers.match(token)),
         output: 'bbcode',
         lineBreak: '\n',
         breakEmptyBlock: false,
@@ -61,47 +61,48 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) : strin
         renderUnmatched: ({
             token,
             content,
-            next,
-            options,
+            options: walkOptions,
         }) => {
-            if (token.name === 'br') {
+            const name = token.name.toLowerCase();
+
+            if (name === 'br') {
                 return '\n';
             }
 
-            if (!options.lazy) {
+            if (!walkOptions.lazy) {
                 return token.value + content + (token.closing ? token.closing.value : '');
             }
 
-            if (droppedTags.includes(token.name.toLowerCase())) {
+            if (droppedTags.includes(name)) {
                 return '';
             }
 
             // Unmatched elements are transparent; block level elements
             // still separate their content from what follows.
-            return separateBlock(token, content, next);
+            return {
+                content,
+                breakAfter: isSeparated(token, content),
+                transparent: true,
+            };
         },
         finishMatched: ({
             token,
             content,
-            next,
             matches,
         }) => {
-            let output = content;
-
             // The bbcode parser swallows one line break after such a tag.
-            if (next && context.handlers.breaks(matches[0], 'after', breakOptions)) {
-                output += '\n';
+            if (context.handlers.breaks(matches[0], 'after', breakOptions)) {
+                return { content, breakAfter: true };
             }
 
             // An element rendered only by attribute handlers keeps
             // the separation of its own block level.
             const tagMatched = matches.some((handler) => isTagMatch(handler, token));
 
-            if (tagMatched) {
-                return output;
-            }
-
-            return separateBlock(token, output, next);
+            return {
+                content,
+                breakAfter: !tagMatched && isSeparated(token, content),
+            };
         },
     });
 }

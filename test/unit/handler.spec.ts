@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
  * view the LICENSE file that was distributed with this source code.
  */
 
-import type { Condition, TokenAttributes } from '../../src';
+import type { Condition, Handler, TokenAttributes } from '../../src';
 import {
     Handlers, 
     Parser, 
@@ -165,6 +165,19 @@ describe('src/handler/module.ts (match)', () => {
 
         expect(result.includes(handlers.get('tagged')!)).toEqual(expected);
         expect(result.includes(handlers.get('probe')!)).toEqual(expected);
+    });
+
+    it('should accept a null class condition in a handler', () => {
+        const handler : Handler = {
+            html: '<span class="x">{0}</span>',
+            bbcode: '[classed]{0}[/classed]',
+            conditions: [{ tag: 'span', attribute: { class: null } }],
+        };
+
+        const parser = new Parser({ handlers: { classed: handler } });
+
+        expect(parser.toBBCode('<span class="x">a</span>')).toEqual('[classed]a[/classed]');
+        expect(parser.toBBCode('<span>a</span>')).toEqual('a');
     });
 
     it('should never match conditions without tag and attribute', () => {

@@ -11,7 +11,6 @@ import type { Token } from '../../token';
 export type WalkUnmatchedContext = {
     token: Token,
     content: string,
-    next: Token | undefined,
     options: ConverterOptions
 };
 
@@ -20,6 +19,20 @@ export type WalkMatchedContext = WalkUnmatchedContext & {
      * The applied handlers; the first one is the outermost.
      */
     matches: Handler[]
+};
+
+export type WalkRendered = {
+    content: string,
+    /**
+     * Separate the output from what follows with one line break,
+     * if any output follows.
+     */
+    breakAfter?: boolean,
+    /**
+     * A pending line break at the end of the element's content
+     * carries over to what follows the element.
+     */
+    transparent?: boolean
 };
 
 export type WalkDirection = {
@@ -46,11 +59,11 @@ export type WalkDirection = {
     /**
      * Render an element without any matching handler.
      */
-    renderUnmatched: (context: WalkUnmatchedContext) => string,
+    renderUnmatched: (context: WalkUnmatchedContext) => string | WalkRendered,
     /**
      * Post-process the output of an element rendered by handlers.
      */
-    finishMatched?: (context: WalkMatchedContext) => string
+    finishMatched?: (context: WalkMatchedContext) => string | WalkRendered
 };
 
 export type WalkContext = {
@@ -68,7 +81,7 @@ export type WalkFrame = {
      */
     owner?: Token,
     /**
-     * The sibling following the owner.
+     * A line break is due before the next non-empty output.
      */
-    next?: Token
+    pendingBreak: boolean
 };
