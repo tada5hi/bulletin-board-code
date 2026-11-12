@@ -5,10 +5,17 @@
  * view the LICENSE file that was distributed with this source code.
  */
 
+import type { Token } from '../../token';
 import { TokenType } from '../../token';
-import type { BBCodeCleanupContext } from '../types';
+import type { ParserOptions } from '../types';
 import { QuoteType } from '../../constants';
-import type { Handler } from '../../handler';
+import type { Handler, Handlers } from '../../handler';
+
+type BBCodeCleanupContext = {
+    tokens: Token[],
+    options: ParserOptions,
+    handlers: Handlers
+};
 
 const NO_BLOCK_BREAKS = {
     breakBeforeBlock: false,

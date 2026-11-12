@@ -13,7 +13,6 @@ import {
 } from './utils';
 import { escapeCharacters, escapeUriScheme, getObjectPathValue } from '../utils';
 
-/* istanbul ignore next */
 export const HandlerPreset : Record<string, Handler> = {
     h1: {
         conditions: [{ tag: 'h1' }],

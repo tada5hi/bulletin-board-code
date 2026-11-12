@@ -6,18 +6,26 @@
  */
 
 import type { QuoteType } from '../constants';
-import type { Handler, Handlers } from '../handler';
+import type { Handler } from '../handler';
 import type { Token } from '../token';
 
 // Retain the published interface name for declaration merging.
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface ParserInterface {
-    parseBBCode(input: string, preserveNewLines: boolean) : Token[],
+    setHandler(items: Record<string, Handler>) : void;
+    setHandler(id: string, handler: Handler) : void;
+    unsetHandler(id: string | string[]) : void;
 
-    toHTML(input: string, preserveNewLines: boolean) : string;
-    fromBBCode(input: string, preserveNewLines: boolean) : string;
+    parseBBCode(input: string, preserveNewLines?: boolean) : Token[];
+    parseHTML(input: string) : Token[];
 
-    cleanupBBCode(input: string, preserveNewLines: boolean) : string;
+    toHTML(input: string, preserveNewLines?: boolean) : string;
+    fromBBCode(input: string, preserveNewLines?: boolean) : string;
+
+    cleanupBBCode(input: string, preserveNewLines?: boolean) : string;
+
+    toBBCode(input: string) : string;
+    fromHTML(input: string) : string;
 }
 
 export type ParserOptions = {
@@ -94,9 +102,3 @@ export type ParserOptions = {
 };
 
 export type ParserOptionsInput = Partial<ParserOptions>;
-
-export type BBCodeCleanupContext = {
-    tokens: Token[],
-    options: ParserOptions,
-    handlers: Handlers
-};

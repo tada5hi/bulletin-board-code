@@ -16,7 +16,8 @@ export class Handlers {
     protected items : Record<string, Handler>;
 
     constructor(items?: Record<string, Handler>) {
-        this.items = {};
+        // No prototype, so ids like __proto__ or constructor stay ordinary entries.
+        this.items = Object.create(null);
 
         this.init();
 

@@ -8,14 +8,8 @@
 import type { Handler } from '../handler';
 import { Handlers } from '../handler';
 import type { Token } from '../token';
-import {
-    fixNestingTokens,
-    normalizeTokenNewLines,
-    parseTokens,
-    removeEmptyTokens,
-    tokenizeBBCode,
-    tokenizeHTML,
-} from '../token';
+import { tokenizeHTML } from '../token';
+import { parseBBCodeTokens } from '../token/pipeline';
 import { isObject } from '../utils';
 import type { ParserInterface, ParserOptions } from './types';
 import { cleanupBBCode } from './utils';
@@ -50,7 +44,7 @@ export class Parser implements ParserInterface {
         }
     }
 
-    unsetHandler(id: string | string[]) {
+    unsetHandler(id: string | string[]) : void {
         this.handlers.unset(id);
     }
 
@@ -63,33 +57,12 @@ export class Parser implements ParserInterface {
      * @param preserveNewLines
      */
     parseBBCode(input: string, preserveNewLines?: boolean) : Token[] {
-        const tokens = parseTokens({
+        return parseBBCodeTokens({
+            input,
             handlers: this.handlers,
-            items: tokenizeBBCode(input, this.handlers),
-            fixInvalidChildren: this.options.fixInvalidChildren,
-        });
-
-        if (this.options.fixInvalidNesting) {
-            fixNestingTokens({
-                handlers: this.handlers,
-                children: tokens,
-                fixInvalidChildren: this.options.fixInvalidChildren,
-            });
-        }
-
-        normalizeTokenNewLines({
-            handlers: this.handlers,
-            children: tokens,
-            parent: undefined,
             options: this.options,
-            onlyRemoveBreakAfter: preserveNewLines,
+            preserveNewLines,
         });
-
-        if (this.options.removeEmptyTags) {
-            removeEmptyTokens(tokens, this.handlers);
-        }
-
-        return tokens;
     }
 
     /**
@@ -97,7 +70,7 @@ export class Parser implements ParserInterface {
      *
      * @param input
      */
-    parseHTML(input: string) {
+    parseHTML(input: string) : Token[] {
         return tokenizeHTML(input);
     }
 
@@ -150,9 +123,8 @@ export class Parser implements ParserInterface {
      * Convert a html string to a bbcode string.
      *
      * @param input
-     * @param _preserveNewLines
      */
-    toBBCode(input: string, _preserveNewLines?: boolean) : string {
+    toBBCode(input: string) : string {
         return convertHTMLToBBCode({
             tokens: this.parseHTML(input),
             options: { lazy: this.options.lazyTransformation },
@@ -166,7 +138,7 @@ export class Parser implements ParserInterface {
      * @alias toBBCode
      * @param input
      */
-    fromHTML(input: string) {
+    fromHTML(input: string) : string {
         return this.toBBCode(input);
     }
 }

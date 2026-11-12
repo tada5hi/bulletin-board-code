@@ -7,7 +7,7 @@
 
 import { TokenType } from '../constants';
 import type { Token } from '../module';
-import type { NestingTokenFixContext } from '../types';
+import type { NestingTokenFixContext } from './types';
 import { isChildAllowed } from './parse';
 import { lastArrayElement } from '../../utils';
 
@@ -26,90 +26,88 @@ import { lastArrayElement } from '../../utils';
 export function fixNestingTokens(context: NestingTokenFixContext) {
     const isInline = (token: Token) => context.handlers.isInline(token.name);
 
-    context.parents = context.parents || [];
-    context.rootArr = context.rootArr || context.children;
+    const rootArr = context.children;
+    const parents : Token[] = [];
 
-    let token: Token;
-    let parent : Token | undefined;
-    let parentIndex : number;
+    const fix = (children: Token[], insideInlineElement: boolean) => {
+        let token: Token;
+        let parent : Token | undefined;
+        let parentIndex : number;
 
-    let parentParentChildren : Token[];
-    let right : Token;
+        let parentParentChildren : Token[];
+        let right : Token;
 
-    // This must check the length each time as it can change when
-    // tokens are moved to fix the nesting.
-    for (let i = 0; i < context.children.length; i++) {
-        if (!(token = context.children[i]) || token.type !== TokenType.OPEN) {
-            continue;
-        }
-
-        if (context.insideInlineElement && !isInline(token)) {
-            // if this is a blocklevel element inside an inline one then
-            // split the parent at the block level element
-            parent = lastArrayElement(context.parents);
-
-            if (!parent) {
+        // This must check the length each time as it can change when
+        // tokens are moved to fix the nesting.
+        // eslint-disable-next-line unicorn/no-for-loop -- the array is spliced while iterating
+        for (let i = 0; i < children.length; i++) {
+            if (!(token = children[i]) || token.type !== TokenType.OPEN) {
                 continue;
             }
 
-            right = parent.splitAt(token);
+            if (insideInlineElement && !isInline(token)) {
+                // if this is a blocklevel element inside an inline one then
+                // split the parent at the block level element
+                parent = lastArrayElement(parents);
 
-            parentParentChildren = context.parents.length > 1 ?
-                context.parents[context.parents.length - 2].children : context.rootArr;
-
-            // If parent inline is allowed inside this tag, clone it and
-            // wrap this tags children in it.
-            if (isChildAllowed({
-                handlers: context.handlers,
-                parent: token,
-                child: parent,
-                fixInvalidChildren: context.fixInvalidChildren,
-            })) {
-                const clone = parent.clone();
-
-                clone.children = token.children;
-                token.children = [clone];
-            }
-
-            parentIndex = parentParentChildren.indexOf(parent);
-
-            if (parentIndex > -1) {
-                // remove the block level token from the right side of
-                // the split inline element
-                right.children.shift();
-
-                // insert the block level token and the right side after
-                // the left side of the inline token
-                parentParentChildren.splice(parentIndex + 1, 0, token, right);
-
-                // If token is a block and is followed by a newline,
-                // then move the newline along with it to the new parent
-                const next = right.children[0];
-
-                if (next && next.type === TokenType.NEWLINE) {
-                    if (!isInline(token)) {
-                        right.children.shift();
-                        parentParentChildren.splice(parentIndex + 2, 0, next);
-                    }
+                if (!parent) {
+                    continue;
                 }
 
-                // return to parents loop as the
-                // children have now increased
-                return;
+                right = parent.splitAt(token);
+
+                parentParentChildren = parents.length > 1 ?
+                    parents[parents.length - 2].children : rootArr;
+
+                // If parent inline is allowed inside this tag, clone it and
+                // wrap this tags children in it.
+                if (isChildAllowed({
+                    handlers: context.handlers,
+                    parent: token,
+                    child: parent,
+                    fixInvalidChildren: context.fixInvalidChildren,
+                })) {
+                    const clone = parent.clone();
+
+                    clone.children = token.children;
+                    token.children = [clone];
+                }
+
+                parentIndex = parentParentChildren.indexOf(parent);
+
+                if (parentIndex > -1) {
+                    // remove the block level token from the right side of
+                    // the split inline element
+                    right.children.shift();
+
+                    // insert the block level token and the right side after
+                    // the left side of the inline token
+                    parentParentChildren.splice(parentIndex + 1, 0, token, right);
+
+                    // If token is a block and is followed by a newline,
+                    // then move the newline along with it to the new parent
+                    const next = right.children[0];
+
+                    if (next && next.type === TokenType.NEWLINE) {
+                        if (!isInline(token)) {
+                            right.children.shift();
+                            parentParentChildren.splice(parentIndex + 2, 0, next);
+                        }
+                    }
+
+                    // return to parents loop as the
+                    // children have now increased
+                    return;
+                }
             }
+
+            parents.push(token);
+
+            fix(token.children, insideInlineElement || isInline(token));
+
+            parents.pop();
         }
+    };
 
-        context.parents.push(token);
-
-        fixNestingTokens({
-            handlers: context.handlers,
-            children: token.children,
-            parents: context.parents,
-            insideInlineElement: context.insideInlineElement || isInline(token),
-            rootArr: context.rootArr,
-            fixInvalidChildren: context.fixInvalidChildren,
-        });
-
-        context.parents.pop();
-    }
+    fix(context.children, false);
 }

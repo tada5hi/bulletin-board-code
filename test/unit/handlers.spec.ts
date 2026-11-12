@@ -77,6 +77,27 @@ describe('src/handler/module.ts', () => {
         }
     });
 
+    it('should store prototype-named handlers as ordinary entries', () => {
+        const registry = new Handlers();
+        const proto = { html: '<p>{0}</p>' };
+
+        registry.set('__proto__', proto);
+        registry.set('constructor', { html: '<q>{0}</q>' });
+
+        expect(Object.getPrototypeOf(registry.get())).not.toBe(proto);
+        expect(registry.has('__proto__')).toEqual(true);
+        expect(registry.get('__proto__')?.html).toEqual('<p>{0}</p>');
+        expect(registry.get('constructor')?.html).toEqual('<q>{0}</q>');
+        expect(registry.has('html')).toEqual(false);
+        expect(Object.keys(registry.get())).toContain('__proto__');
+
+        const parser = new Parser();
+
+        parser.setHandler('__proto__', proto);
+
+        expect(parser.toHTML('[__proto__]x[/__proto__][b]y[/b]')).toEqual('<p>x</p><strong>y</strong>');
+    });
+
     it('should convert prototype-named tags to literal text', () => {
         const parser = new Parser();
 

@@ -33,7 +33,7 @@ export class Token {
         this.name = name;
         this.value = value;
 
-        this.attrs = attrs || [];
+        this.attrs = attrs || {};
         this.children = children || [];
         this.closing = closing || null;
     }
