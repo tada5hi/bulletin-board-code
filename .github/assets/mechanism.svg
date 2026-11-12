@@ -1,10 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="240" viewBox="0 0 960 240" role="img" aria-labelledby="bulletin-board-code-title bulletin-board-code-desc">
-<title id="bulletin-board-code-title">Token conversion</title><desc id="bulletin-board-code-desc">Parser tokenizes BBCode, normalizes nesting and empty tags, then renders each supported token through its HTML handler.</desc>
-<style>:root{--panel:#f5f7fa;--ink:#172536;--line:#718294;--accent:#9c5c9d}@media(prefers-color-scheme:dark){:root{--panel:#182431;--ink:#edf3f8;--line:#a3b1bf}}text{font-family:system-ui,sans-serif;fill:var(--ink)}.card{fill:var(--panel);stroke:var(--accent);stroke-width:2}.arrow{stroke:var(--line);stroke-width:3;fill:none}</style>
-<rect x="1" y="1" width="958" height="238" rx="16" fill="var(--panel)"/>
-<text x="36" y="44" font-size="22" font-weight="700">Token conversion</text>
-<path class="arrow" d="M304 140h30m-8-7 8 7-8 7M624 140h30m-8-7 8 7-8 7"/>
-<rect class="card" x="24" y="80" width="272" height="112" rx="12"/><text x="42" y="122" font-size="19" font-weight="650">BBCode input</text><text x="42" y="157" font-size="16">parseBBCode()</text>
-<rect class="card" x="344" y="80" width="272" height="112" rx="12"/><text x="362" y="122" font-size="19" font-weight="650">Normalize token tree</text><text x="362" y="157" font-size="16">fix nesting / empty tags</text>
-<rect class="card" x="664" y="80" width="272" height="112" rx="12"/><text x="682" y="122" font-size="19" font-weight="650">toHTML()</text><text x="682" y="157" font-size="16">Handler.html renders</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="300" viewBox="0 0 960 300" role="img" aria-labelledby="t d">
+<title id="t">Conversion in both directions</title>
+<desc id="d">BBCode is tokenized, built into a repaired token tree and walked into HTML. HTML is tokenized, has its whitespace collapsed, and is matched against handlers and walked into BBCode. Both lanes use the handler registry.</desc>
+<style>
+:root{--panel:#f5f7fa;--card:#ffffff;--ink:#172536;--mute:#56667a;--line:#718294;--a:#9c5c9d;--b:#b9741f}
+@media(prefers-color-scheme:dark){:root{--panel:#182431;--card:#223142;--ink:#edf3f8;--mute:#a9b7c6;--line:#a3b1bf;--a:#c48ac5;--b:#e9a35a}}
+text{font-family:system-ui,-apple-system,Segoe UI,sans-serif;fill:var(--ink)}
+.h{font-size:15px;font-weight:650}.s{font-size:12px;fill:var(--mute)}.m{font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.l{font-size:14px;font-weight:700;letter-spacing:.04em}
+.c{fill:var(--card);stroke-width:2}.ar{stroke:var(--line);stroke-width:2.5;fill:none}.dot{stroke:var(--line);stroke-width:2;stroke-dasharray:3 4;fill:none}
+</style>
+<defs><marker id="h" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 1L9 5L0 9z" fill="var(--line)"/></marker></defs>
+<rect x="1" y="1" width="958" height="298" rx="16" fill="var(--panel)"/>
+
+<text class="l" x="32" y="42" fill="var(--a)" style="fill:var(--a)">BBCODE TO HTML</text>
+<g stroke="var(--a)">
+<rect class="c" x="32" y="56" width="160" height="64" rx="10"/><rect class="c" x="212" y="56" width="160" height="64" rx="10"/><rect class="c" x="392" y="56" width="160" height="64" rx="10"/><rect class="c" x="572" y="56" width="160" height="64" rx="10"/><rect class="c" x="752" y="56" width="176" height="64" rx="10"/>
+</g>
+<path class="ar" marker-end="url(#h)" d="M194 88H208"/><path class="ar" marker-end="url(#h)" d="M374 88H388"/><path class="ar" marker-end="url(#h)" d="M554 88H568"/><path class="ar" marker-end="url(#h)" d="M734 88H748"/>
+<text class="h" x="46" y="83">BBCode text</text><text class="m" x="46" y="104">[b]hi[/b]</text>
+<text class="h" x="226" y="83">Tokenize</text><text class="s" x="226" y="104">tags, text, newlines</text>
+<text class="h" x="406" y="83">Build the tree</text><text class="s" x="406" y="104">nesting, breaks, empties</text>
+<text class="h" x="586" y="83">Tree walk</text><text class="s" x="586" y="104">handler.html per tag</text>
+<text class="h" x="766" y="83">HTML</text><text class="m" x="766" y="104">&lt;strong&gt;hi&lt;/strong&gt;</text>
+
+<path class="dot" d="M472 120V136M652 120V136M472 164V180M652 164V180"/>
+<rect x="392" y="136" width="340" height="28" rx="14" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+<text class="s" x="562" y="155" text-anchor="middle" style="fill:var(--ink)">Handler registry: tag policy and HTML matcher</text>
+
+<text class="l" x="32" y="166" style="fill:var(--b)">HTML TO BBCODE</text>
+<g stroke="var(--b)">
+<rect class="c" x="32" y="180" width="160" height="64" rx="10"/><rect class="c" x="212" y="180" width="160" height="64" rx="10"/><rect class="c" x="392" y="180" width="160" height="64" rx="10"/><rect class="c" x="572" y="180" width="160" height="64" rx="10"/><rect class="c" x="752" y="180" width="176" height="64" rx="10"/>
+</g>
+<path class="ar" marker-end="url(#h)" d="M194 212H208"/><path class="ar" marker-end="url(#h)" d="M374 212H388"/><path class="ar" marker-end="url(#h)" d="M554 212H568"/><path class="ar" marker-end="url(#h)" d="M734 212H748"/>
+<text class="h" x="46" y="207">HTML text</text><text class="m" x="46" y="228">&lt;em&gt;hi&lt;/em&gt;</text>
+<text class="h" x="226" y="207">Tokenize</text><text class="s" x="226" y="228">node-html-parser</text>
+<text class="h" x="406" y="207">Whitespace</text><text class="s" x="406" y="228">collapsed like a browser</text>
+<text class="h" x="586" y="207">Match and walk</text><text class="s" x="586" y="228">handler.bbcode output</text>
+<text class="h" x="766" y="207">BBCode</text><text class="m" x="766" y="228">[i]hi[/i]</text>
+
+<text class="s" x="32" y="276">Both lanes run the same tree walk; only handler lookup, output format and line break differ.</text>
 </svg>

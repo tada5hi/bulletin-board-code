@@ -21,9 +21,9 @@ Convert stored forum markup to HTML and edited HTML back to BBCode with one conf
 | Nested markup | Repair nesting with string replacements | Tokenize, normalize and convert a token tree |
 | Custom tags | Change both converters separately | Register both representations in one Handler |
 
-Parser tokenizes BBCode, normalizes nesting and empty tags, then renders each supported token through its HTML handler.
+The parser turns BBCode or HTML into a token tree and renders it through the handler of each tag, in either direction.
 
-<img src=".github/assets/mechanism.svg" width="960" alt="Parser tokenizes BBCode, normalizes nesting and empty tags, then renders each supported token through its HTML handler." />
+<img src=".github/assets/mechanism.svg" width="960" alt="BBCode is tokenized, built into a token tree and walked into HTML. HTML is tokenized, has its whitespace collapsed, and is matched against handlers and walked into BBCode. Both directions use the handler registry." />
 
 **Table of Contents**
 
