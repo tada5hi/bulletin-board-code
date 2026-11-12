@@ -7,7 +7,6 @@
 
 import type { Token } from '../../token';
 import { TokenType } from '../../token';
-import { findHandlerForHTMLToken } from '../../handler/utils';
 import { escapeCharacters, formatString } from '../../utils';
 import type { HTMLToBBCodeConvertContext } from '../types';
 
@@ -27,7 +26,8 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
             case TokenType.OPEN: {
                 const lastChild : Token | undefined = token.children[token.children.length - 1];
 
-                const handler = findHandlerForHTMLToken(context.handlers, token);
+                const handlers = context.handlers.match(token)
+                    .filter((handler) => !!handler.bbcode);
                 let content = convertHTMLToBBCode({
                     tokens: [...token.children],
                     options: {
@@ -37,32 +37,40 @@ export function convertHTMLToBBCode(context: HTMLToBBCodeConvertContext) {
                     handlers: context.handlers,
                 });
 
-                if (handler && handler.bbcode) {
-                    const lastChildHandler = findHandlerForHTMLToken(context.handlers, lastChild);
+                if (handlers.length > 0) {
+                    const lastChildHandler = lastChild ?
+                        context.handlers.match(lastChild)[0] :
+                        undefined;
 
                     if (
                         lastChildHandler &&
-                        !context.handlers.isHtmlInline(handler) &&
+                        !context.handlers.isHtmlInline(handlers[0]) &&
                         context.handlers.isHtmlInline(lastChildHandler) &&
-                        !handler.skipLastLineBreak
+                        !handlers[0].skipLastLineBreak
                     ) {
                         // Add placeholder br to end of block level
                         // elements
                         content += '\n';
                     }
 
-                    if (typeof handler.bbcode !== 'function') {
-                        token.attrs['0'] = content;
-                        output += formatString(handler.bbcode, token.attrs);
-                    } else {
-                        output += handler.bbcode({
-                            handlers: context.handlers,
-                            token,
-                            attributes: token.attrs,
-                            content,
-                            options: context.options,
-                        });
+                    // Apply the matches nested: the first match is the outermost.
+                    for (let i = handlers.length - 1; i >= 0; i--) {
+                        const { bbcode } = handlers[i];
+
+                        if (typeof bbcode === 'string') {
+                            content = formatString(bbcode, { ...token.attrs, 0: content });
+                        } else if (bbcode) {
+                            content = bbcode({
+                                handlers: context.handlers,
+                                token,
+                                attributes: token.attrs,
+                                content,
+                                options: context.options,
+                            });
+                        }
                     }
+
+                    output += content;
                 } else if (!context.options.lazy) {
                     output += token.value + content + (token.closing ? token.closing.value : '');
                 }

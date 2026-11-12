@@ -8,8 +8,9 @@
 import { hasOwnProperty, isObject } from '../utils';
 import { HandlerPreset } from './constants';
 import type { ParserOptions } from '../parser';
+import type { Token } from '../token';
 import type { Handler } from './types';
-import { extendHandler } from './utils';
+import { extendHandler, matchHandlers } from './utils';
 
 export class Handlers {
     protected items : Record<string, Handler>;
@@ -123,6 +124,17 @@ export class Handlers {
         }
 
         return item.isInline === false && option && flag !== false;
+    }
+
+    /**
+     * Find the handlers matching an HTML token.
+     * At most one tag matched handler comes first, followed by
+     * every handler matched only through attribute conditions.
+     *
+     * @param token
+     */
+    match(token: Token) : Handler[] {
+        return matchHandlers(this.items, token);
     }
 
     protected resolve(handler: string | Handler) : Handler | undefined {

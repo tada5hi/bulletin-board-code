@@ -15,7 +15,6 @@ export function extendHandler(handler: Handler) {
             allowsEmpty: false,
             excludeClosing: false,
             skipLastLineBreak: false,
-            strictMatch: false,
         } as Partial<Handler>,
         ...handler,
     };

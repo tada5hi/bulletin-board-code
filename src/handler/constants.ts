@@ -63,7 +63,7 @@ export const HandlerPreset : Record<string, Handler> = {
         conditions: [
             { tag: 'i' },
             { tag: 'em' },
-            { attribute: { style: { textDecoration: ['italic', 'oblique'] } } },
+            { attribute: { style: { fontStyle: ['italic', 'oblique'] } } },
         ],
         bbcode: '[i]{0}[/i]',
         html: '<em>{0}</em>',

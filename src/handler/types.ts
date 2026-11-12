@@ -12,9 +12,9 @@ import type { Handlers } from './module';
 
 export type Attribute = {
     style?: {
-        [T in keyof CSSStyleDeclaration]?: string[] | null
+        [T in keyof CSSStyleDeclaration]?: string | string[] | null
     },
-    class?: string[],
+    class?: string | string[],
     [key: string]: any
 };
 
@@ -104,13 +104,6 @@ export type Handler = {
      * default: false
      */
     skipLastLineBreak?: boolean,
-
-    /**
-     * Whether to use strict matching on attributes and styles.
-     *
-     * default: false
-     */
-    strictMatch?: boolean,
 
     /**
      * If to insert a new line before the start tag.

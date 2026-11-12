@@ -8,4 +8,4 @@
 export * from './color';
 export * from './common';
 export * from './extend';
-export * from './find';
+export * from './match';
